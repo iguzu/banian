@@ -1,0 +1,57 @@
+{% extends "contentbase.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Event{% endblock %}
+{% block extra-head %}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+<script type="text/javascript">
+<!--
+ 	$(document).ready( function() {
+					
+	});
+			
+//-->
+ </script>
+{% endblock %}
+{% block content-leftpane %}
+<div class="notice">This event is not yet published. Use the publish button to publish your event once you are ready to announce it</div>
+<fieldset><legend>Event Wizard</legend>
+<div id="tabs"><ul>{% for item in step_info %}
+<li {%ifequal forloop.counter0 step %}class="current"{%else%}{%if item.url%}class="completed"{%endif%}{%endifequal%}><a href="{%if item.url%}{{item.url}}{%else%}#{%endif%}"><span>{{item.name}}</span></a></li>{%endfor%}
+</ul></div>
+<p class="prepend-1"><strong>Step {{step|add:"1"}} of {{total_step}}</strong></p>
+ <div style="text-align:right;">
+<a class="sexybutton" href="{%url banian.views.preview_ticket key=form.instance.key%}"><span><span><span class="preview">Preview Ticket</span></span></span></a>
+<a class="sexybutton" href="{%url banian.views.preview_sale_page key=form.instance.key%}"><span><span><span class="html">Preview Sale Page</span></span></span></a>
+<a class="sexybutton" href="{% url banian.views.publish key=form.representation.key %}"><span><span><span class="reload">Publish</span></span></span></a>
+ </div>
+   
+   <fieldset><legend>{{form.instance.name}}</legend>
+   	<table>
+          <tr><td><strong>Status:</strong></td><td>{{ form.representation.status }}</td></tr>
+          <tr><td><strong>Name:</strong></td><td>{{ form.instance.name }}</td></tr>
+          <tr><td><strong>Description:</strong></td><td>{{ form.instance.description }}</td></tr>
+          <tr><td><strong>Web Site:</strong></td><td><a href="{{ form.instance.web_site }}">{{ form.instance.web_site }}</a></td></tr>
+          <tr><td><strong>email:</strong></td><td><a href="mailto:{{ form.instance.email }}">{{ form.instance.email }}</a></td></tr>
+          <tr><td><strong>Venue:</strong></td><td>{{form.instance.venue.name }}</td></tr>
+          <tr><td><strong>Address:</strong></td><td>{{form.instance.venue.address }}</td></tr>
+          <tr><td><strong>Date:</strong></td><td>{{ form.representation.date|date:"l, F jS Y \a\t P" }}<br>({{form.instance.timezone_name}})</td></tr>
+          <tr><td><strong>Duration:</strong></td><td>{{ form.instance.duration  }} minutes</td></tr>
+          <tr><td><strong>Door Open/Access:</strong></td><td>{{ form.instance.door_open|floatformat:0  }} minutes before the event</td></tr>
+		  <tr><td colspan="2"><hr></td></tr>		 
+		  <tr><td><strong>Nbr Tickets:</strong></td><td>{{ form.sg.nbr_seat }}</td></tr>
+		  <tr><td><strong>Price:</strong></td><td>{{ form.ticket_class.price }}</td></tr>
+		  <tr><td><strong>General Admission:</strong></td><td>{%if form.instance.ticket_class.general_admission%}Yes{%else%}No{%endif%}</td></tr>
+ 		<tr><td><strong>Restrict Sale Period:</strong></td><td>{%if form.instance.restrict_sale_period%}Yes</td></tr>
+                   									{%if form.instance.onsale_date%}<tr><td></td><td>Begins on {{ form.instance.onsale_date|date:"F jS Y \a\t P" }}</td></tr>{%endif%}
+                   									{%if form.instance.endsale_date%}<tr><td></td><td>Until {{ form.instance.endsale_date|date:"F jS Y \a\t P" }}</td></tr>{%endif%}{%else%}No</td></tr>{%endif%}
+          <tr><td><strong>Cancellable:</strong></td><td>{%if form.instance.cancellable%}Yes ({{form.instance.cancel_delay|floatformat:"0"}} days before the event, {{form.instance.cancel_fees|floatformat:"0"}}% fees){%else%}No{%endif%}</td></tr>
+          <tr><td><strong>Limit Tickets:</strong></td><td>{%if form.instance.limit_tickets%}Yes ({{form.instance.max_tickets}} tickets per user){%else%}No{%endif%}</td></tr>
+          <tr><td><strong>Note:</strong></td><td>{{ form.instance.note }}</td></tr>
+          
+      </table>      
+  </fieldset>
+<div>
+<a class="sexybutton" href="{{previous_step_url}}"><span><span><span class="prev">Previous</span></span></span></a>
+<a class="sexybutton" href="{%url banian.views.show_event key=form.instance.key%}"><span><span><span class="redo">Back</span></span></span></a>
+</div>
+</fieldset>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "contentbase.html" %}
+{% block title %}Seat Configuration List{% endblock %}
+{% block content-leftpane %}
+    <h2>{{ venue.name }} Seat Configurations</h2>
+    <p class="span-12"></p>
+    <a href="{% url banian.venue.views.add_seat_config %}{% if venue_key %}?venue={{ venue_key }}{% endif %}"><img src="{{ MEDIA_URL }}global/button_add.gif" alt="Add" ></a>
+    <table class="list">
+        <thead>
+            <tr><th></th><th>Name</th><th>Description</th><th>Seat Group</th></tr>
+        </thead>
+        <tbody>
+            {%if seat_config_list %}
+            {% for seat_config in seat_config_list %}
+                <tr class="{% cycle 'odd' 'even' %}">
+                    <td class="row"><a href="{% url banian.venue.views.edit_seat_config key=seat_config.key %}"><img src="{{ MEDIA_URL }}global/edit.gif" alt="edit" ></a></td>
+                    <td class="row"><a href="{% url banian.venue.views.show_seat_config key=seat_config.key %}">{{seat_config.name }}</a></td>
+                    <td class="row">{{seat_config.description }}</td>
+                    <td class="row">{{seat_config.seat_group }}</td>
+                </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="4"><i>Click Add to create a Seat Configuration</i></td></tr>
+            {% endif %}
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+ <p></p>
+{% endblock %}

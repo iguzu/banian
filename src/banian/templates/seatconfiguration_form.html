@@ -1,0 +1,16 @@
+{% extends "contentbase.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Seat Configuration{% endblock %}
+{% block content-leftpane %}
+<form action="{%if not object %}?venue={{ venue_key }}{% endif %}" method="post" enctype="multipart/form-data">    
+    <fieldset><legend>Seat Configuration Details</legend>
+        <table>
+         {{ form }}
+        </table>
+   <input type="image" {% if object %}src="{{ MEDIA_URL }}global/button_save.gif" alt="Save"{% else %}src="{{ MEDIA_URL }}global/button_create.gif" alt="Create"{% endif %}>
+   {% if object %}
+    <a href="{% url banian.venue.views.show_seat_config key=object.key %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+   {% else %}
+    <a href="{% url banian.views.events %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+   {% endif %}
+    </fieldset>
+{% endblock %}

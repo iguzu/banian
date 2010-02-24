@@ -1,0 +1,59 @@
+{% extends "contentbase.html" %}
+{% block title %}Event Detail{% endblock %}
+{% block content-leftpane %}
+{%if preview%}<div class="notice">This is a preview of the sale page of your event. This message will not appear on the real page.</div>{%endif%}
+  <fieldset><legend class="title">{{ object.name }}</legend>
+   <div style="width:100%;text-align:right"></div>
+   <table><tr>{% if object.poster_image %}<td><img src="{% url banian.views.image key=object.poster_image.key %}" alt="{{objec.name}}"></td>{% endif %}<td>
+   
+   <fieldset><legend>Event Details</legend>
+         <table>
+          <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>
+          <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
+          <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
+{%if object.description%}<tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>{%endif%}
+{%if object.web_site%}<tr><td><strong>Web Site:</strong></td><td><a href="{{ object.web_site }}">{{ object.web_site }}</a></td></tr>{%endif%}
+{%if object.email%}<tr><td><strong>email:</strong></td><td><a href="mailto:{{ object.email }}">{{ object.email }}</a></td></tr>{%endif%}
+{%if object.performer %}           <tr><td><strong>Performer:</strong></td><td>{{ object.performer }}</td></tr> {%endif%}
+{%if object.description %}          <tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr> {%endif%}
+{%if object.limit_duration %}          <tr><td><strong>Duration:</strong></td><td>{{ object.duration  }} minutes</td></tr>{%endif%}
+          <tr><td><strong>Door Opens/Access:</strong></td><td>{{ object.door_open|floatformat:0  }} minutes before the event</td></tr>
+{%if object.restrict_sale_period %}
+ <tr><td><strong>On Sale:</strong></td><td>{{ object.onsale_date|date:"l, F jS Y \a\t P" }}</td></tr>
+ {%if object.endsale_date%}<tr><td><strong>End of Sale:</strong></td><td>{{ object.endsale_date|date:"l, F jS Y \a\t P" }}</td></tr>{%endif%}
+{%endif%}
+{%if object.note%}<tr><td><strong>Note:</strong></td><td>{{ object.note  }}</td></tr>{%endif%}
+      </table>      
+  </fieldset>
+  </td></tr></table>
+<fieldset><legend>Dates/Representations</legend>
+  <table class="list">
+    <thead>
+        <tr>
+            <th>Date</th><th></th><th>Availability</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for representation in representation_set %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td class="row">{{representation.date|date:"l, F jS Y \a\t P" }}</td>
+                <td class="row">{%ifequal representation.status "Sold Out"%}Sold out{%endifequal%}
+                				{%ifequal representation.status "Published"%}Not on sale yet{%endifequal%}
+                				{%ifequal representation.status "On Sale"%}<a class="sexybutton" href="{%if not preview%}{% url banian.views.buy_representation key=representation.key %}{%else%}#{%endif%}"><span><span><span class="cart">Buy Now</span></span></span></a>{%endifequal%}
+                				</td>
+                <td class="row">({%if preview%}{{representation.available_tickets_preview_text}}{%else%}{{representation.available_tickets_text}}{%endif%})</td>
+            </tr>
+		{% empty %}
+		<tr><td colspan="3"><i>Click add button to create a representation</i></td></tr>
+        {% endfor %}
+    </tbody>     
+  </table>  
+</fieldset>
+{%if preview%}
+<a class="sexybutton" href="{{preview_redirect}}"><span><span><span class="redo">Back</span></span></span></a>
+{%else%}
+<a class="sexybutton" href="{% url banian.views.search_events %}"><span><span><span class="redo">Back</span></span></span></a>
+{%endif%}
+</fieldset> 
+{% endblock %}
+

@@ -1,0 +1,52 @@
+{% extends "contentbase.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Event{% endblock %}
+{% block extra-head %}
+<style type="text/css">
+ul { list-style-type: none; padding: 0px; margin: 0px; }
+</style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+<script type="text/javascript">
+<!--
+ 	$(document).ready( function() {
+ 		$("input[name='is_free']").click(function(event) {
+			val =  $(this).val()
+			if ( val == '1') {
+				$("#id_price").attr("disabled","disabled")
+				$("#id_price").val()
+			} else {
+				$("#id_price").removeAttr("disabled")
+			} 		
+ 		});
+ 		val = $("input[name='is_free']").fieldValue()
+ 		if (val == 1) {
+ 			$("#id_price").attr("disabled","disabled")
+ 		}	
+	});
+//-->
+ </script>
+{% endblock %}
+
+{% block content-leftpane %}
+<fieldset><legend>Event Wizard</legend>
+<div id="tabs"><ul>{% for item in step_info %}
+<li {%ifequal forloop.counter0 step %}class="current"{%else%}{%if item.url%}class="completed"{%endif%}{%endifequal%}><a href="{%if item.url%}{{item.url}}{%else%}#{%endif%}"><span>{{item.name}}</span></a></li>{%endfor%}
+</ul></div>
+<p class="prepend-1"><strong>Step {{step|add:"1"}} of {{total_step}}</strong></p>
+<form action="" method="post" enctype="multipart/form-data">
+{% if form.errors %}<div class="error">{{ form.errors }}</div>{% endif %}
+<fieldset><legend>How Many Tickets?</legend>
+<table>
+         <tr><td><label for="id_nbr_tickets">{{form.nbr_tickets.label}}:</label></td><td>{{form.nbr_tickets}}</td></tr>
+         <tr><td><label for="id_is_free">{{form.is_free.label}}:</label></td><td>{{form.is_free}}</td></tr>
+         <tr id='id_price_line'><td></td><td><label for="id_price">{{form.price.label}}:</label> {{form.price}} $</td></tr>
+</table>
+</fieldset>
+<div>
+<a class="sexybutton" href="{{previous_step_url}}"><span><span><span class="prev">Previous</span></span></span></a>
+<button class="sexybutton" id="id_submit_type-next" type="submit" name="next" value="next"><span><span><span class="next">Next</span></span></span></button>
+<button class="sexybutton" id="id_submit_type-save" type="submit" name="save" value="save"><span><span><span class="save">Save</span></span></span></button>
+<a class="sexybutton" href="{%url banian.views.show_event key=form.instance.key%}"><span><span><span class="redo">Back</span></span></span></a>
+</div>
+</form>
+</fieldset>
+{% endblock %}

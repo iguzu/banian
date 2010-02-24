@@ -1,0 +1,91 @@
+{% extends "contentbase.html" %}
+{% load istatus %}
+{% block title %}Event Detail{% endblock %}
+{% block content-leftpane %}
+  <fieldset><legend class="title">{{ object.name }}</legend>
+   <div style="text-align:right">
+   </div>
+   <table><tr>{% if object.poster_image %}<td><img src="{% url banian.views.image key=object.poster_image.key %}"></td>{% endif %}<td>
+   
+   <fieldset><legend>Event Details</legend>
+         <table>
+          <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>
+          <tr><td><strong>Venue:</strong></td><td><a href="{% url banian.venue.views.show_venue key=object.venue.key %}">{{object.venue.name }}</a></td></tr>
+          <tr><td><strong>Performer:</strong></td><td>{{ object.performer }}</td></tr>
+          <tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>
+          <tr><td><strong>Web Site:</strong></td><td><a href="{{ object.web_site }}">{{ object.web_site }}</a></td></tr>
+          <tr><td><strong>email:</strong></td><td><a href="mailto:{{ object.email }}">{{ object.email }}</a></td></tr>
+          <tr><td><strong>Duration:</strong></td><td>{{ object.duration  }} minutes</td></tr>
+          <tr><td><strong>Door:</strong></td><td>{{ object.door_open|floatformat:0  }} minutes before the event</td></tr>
+          <tr><td><strong>On Sale:</strong></td><td>{{ object.onsale_date|date:"l, F jS Y \a\t P" }}<br>({{object.timezone_name}})</td></tr>
+          <tr><td><strong>Seat Configuration:</strong></td><td>{{ object.seat_configuration.name }}</td></tr>
+          <tr><td><strong>Status:</strong></td><td>{{ object.status }}</td></tr>
+          <tr><td><strong>Cancellable:</strong></td><td>{%if object.cancellable%}Yes ({{object.cancel_delay|floatformat:"0"}} days before the event, {{object.cancel_fees|floatformat:"0"}}% fees){%else%}No{%endif%}</td></tr>
+          <tr><td><strong>Limit Tickets:</strong></td><td>{%if object.limit_tickets%}Yes ({{object.max_tickets}} tickets per user){%else%}No{%endif%}</td></tr>
+          <tr><td><strong>Note:</strong></td><td>{{ object.note }}</td></tr>
+          
+      </table>      
+  </fieldset>
+  </td></tr></table>
+<fieldset><legend>Ticket Classes</legend>
+{%if object.mutable%}
+<a href="{% url banian.views.add_class %}?event={{ object.key }}"><img src="{{ MEDIA_URL }}global/button_add.gif" alt="Add" ></a>
+{%endif%}
+  <table class="list">
+    <thead>
+        <tr>
+            <th>Ticket Class Name</th><th>Price</th><th>Nbr Seats</th><th>Value</th>
+        </tr>
+    </thead>
+    <tfoot>
+    <tr><td>Total</td><td></td><td>{{object.nbr_seats}}{%if object.nbr_unassigned_seats%}<strong style="color:#FF0000;"> ({{object.nbr_unassigned_seats}} unassigned!)</strong>{%endif%}</td><td>{{object.representation_value|floatformat:2}} $</td></tr>
+    </tfoot>
+    <tbody>
+        {% for ticket_class in object.ticket_classes %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td class="row"><a href="{% url banian.views.show_class key=ticket_class.key %}">{{ticket_class.name }}</a></td>
+                <td class="row">{{ticket_class.price|floatformat:2}} $</td>
+                <td class="row">{{ticket_class.nbr_seats}}</td>
+                <td class="row">{{ticket_class.value|floatformat:2}} $</td>
+            </tr>
+		{% empty %}
+		<tr><td colspan="4"><i>Click add to create a ticket class</i></td></tr>
+        {% endfor %}
+    </tbody>     
+  </table>
+  
+</fieldset>
+<fieldset><legend>Representations</legend>
+<a href="{% url banian.views.add_representation %}?event={{ object.key }}"><img src="{{ MEDIA_URL }}global/button_add.gif" alt="Add" ></a>
+  <table class="list">
+    <thead>
+        <tr>
+            <th>Date</th><th>Status</th><th>Tickets Available</th><th>Revenues / Value</th>
+        </tr>
+    </thead>
+    <tfoot>
+		<tr><td>Total</td><td></td><td>{{object.available_tickets}} / {{object.nbr_tickets }}</td><td>{{object.revenues|floatformat:2}} / {{object.value|floatformat:2}} $</td></tr>
+    </tfoot>
+    <tbody>
+        {% for representation in object.representations %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td class="row"><a href="{% url banian.views.show_representation key=representation.key %}">{{representation.date|date:"l, F jS Y \a\t P" }}</a></td>
+                <td class="row">{{representation.status}}</td>
+                <td class="row">{{representation.available_tickets}}/{{representation.nbr_tickets}}</td>
+                <td class="row">{{representation.revenues|floatformat:2}} / {{representation.value|floatformat:2}} $</td>
+            </tr>
+		{% empty %}
+		<tr><td colspan="4"><i>Click add button to create a representation</i></td></tr>
+        {% endfor %}
+    </tbody>     
+  </table>
+  
+</fieldset>
+{%if object.mutable %}
+  <a href="{% url banian.views.edit_event key=object.key%}"><img src="{{ MEDIA_URL }}global/button_edit.gif" alt="Edit" ></a>
+  <a href="{% url banian.views.delete_event key=object.key %}"><img src="{{ MEDIA_URL }}global/button_delete.gif" alt="Delete" ></a>
+ {%endif%} 
+  <a href="{% url banian.views.events %}"><img src="{{ MEDIA_URL }}global/button_back.gif" alt="Back" ></a>
+</fieldset> 
+{% endblock %}
+

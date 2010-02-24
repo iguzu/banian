@@ -1,0 +1,14 @@
+{% extends 'contentbase.html' %}
+{% block title %}Cancel {{representation.event.name }}{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Unpublish Event</legend>
+<div class="notice"> Do you really want to unpublish <strong>{{representation.event.name}}</strong>?
+{%if refund%}<br><br><div class="error"><strong>Some tickets were already issued, cancelling the event will automatically triger a refund to ticket holders.</strong></div>{%endif%}</div>
+<form action="" method="post">
+<div>
+<button class="sexybutton" type="submit" name="delete" value="Confirm"><span><span><span class="accept">Confirm</span></span></span></button>
+<a  class="sexybutton" href="{% url banian.views.show_event key=representation.event.key %}"><span><span><span class="cancel">Cancel</span></span></span></a>
+</div>
+</form>
+</fieldset>
+{% endblock %}

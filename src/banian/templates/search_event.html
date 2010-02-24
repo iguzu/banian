@@ -1,0 +1,94 @@
+{% extends "contentbase.html" %}
+{% block title %}Event List{% endblock %}
+{% block extra-head %}
+<script type="text/javascript">
+<!--
+ 	$(document).ready( function() {
+ 			{%ifequal units 1 %}
+ 			 $("#id_distance_km").attr("style","display:none");
+ 			 $("#id_distance_mi").attr("style","display:inline");
+ 			{%else%}
+ 			 $("#id_distance_mi").attr("style","display:none");
+ 			 $("#id_distance_km").attr("style","display:inline");
+ 			{%endifequal%}
+			$("#id_distance_km").change(function() {
+				$("#id_search_results").html('<tr><td><img src="{{ MEDIA_URL }}global/ajax-loader.gif" alt="loading" ><\/td><\/tr>');
+				$("#id_search_results").load("{% url banian.views.search_events %}?results_only=True&distance="+ $("#id_distance_km").val() + "&units=2"); 
+			});
+			$("#id_distance_mi").change(function() {
+				$("#id_search_results").html('<tr><td><img src="{{ MEDIA_URL }}global/ajax-loader.gif" alt="loading" ><\/td><\/tr>');
+				$("#id_search_results").load("{% url banian.views.search_events %}?results_only=True&distance="+ $("#id_distance_mi").val() + "&units=1"); 
+			});
+			
+			$("#id_units_selector_km").click(function(event) {
+				$("#id_units_selector_km").attr("style","display:none");
+				$("#id_units_selector_mi").attr("style","display:inline");
+ 			    $("#id_distance_mi").attr("style","display:none");
+ 			    $("#id_distance_km").attr("style","display:inline");
+ 			    $("#id_search_results").html('<tr><td><img src="{{ MEDIA_URL }}global/ajax-loader.gif" alt="loading" ><\/td><\/tr>');
+				$("#id_search_results").load("{% url banian.views.search_events %}?results_only=True&distance="+ $("#id_distance_km").val() + "&units=2"); 
+				event.preventDefault();
+			});
+			$("#id_units_selector_mi").click(function(event) {
+				$("#id_units_selector_mi").attr("style","display:none");
+				$("#id_units_selector_km").attr("style","display:inline");
+				$("#id_distance_km").attr("style","display:none");
+ 			    $("#id_distance_mi").attr("style","display:inline");
+				$("#id_search_results").html('<tr><td><img src="{{ MEDIA_URL }}global/ajax-loader.gif" alt="loading" ><\/td><\/tr>');
+				$("#id_search_results").load("{% url banian.views.search_events %}?results_only=True&distance="+ $("#id_distance_mi").val() + "&units=1"); 				
+				event.preventDefault();
+			});
+	});
+//-->	
+ </script>
+{% endblock %}
+{% block content-leftpane %}
+<h2>Search Events</h2>
+<table style="margin-bottom:0.0em"><tr><td style="padding:2px;">
+{% if is_paginated %}
+<ul id="pagination-digg-top">
+{% if has_previous %}
+<li class="previous"><a href="?page={{ previous }}">&lt;&lt; Previous</a></li>
+{% else %}
+<li class="previous-off">&lt;&lt; Previous</li>
+{% endif %}
+<li class="active">{{ page }} of {{ pages}}</li>
+{% if has_next %}
+<li class="next"><a href="?page={{ next }}">Next &gt;&gt;</a></li>
+{% else %}
+<li class="next-off">Next &gt;&gt;</li>
+{% endif %}
+</ul><br>
+{% endif %}
+</td><td style="padding:0px;"><table style="margin-bottom:0em;"><tr><td style="text-align:right;padding:1px;" colspan="2"><strong>Location:</strong> {{ location }}</td></tr><tr><td style="text-align:right;padding:1px;"><form action=""><div><strong>Search Distance:</strong> {{form.distance_mi}}{{form.distance_km}}</div></form></td><td style="vertical-align:center;padding:2px;width:20px" ><a style={%ifequal units 1 %}"display:inline"{%else%}"display:none"{%endifequal%} id="id_units_selector_km" href="{% url banian.views.search_events %}?units=2">km</a><a style={%ifequal units 2 %}"display:inline"{%else%}"display:none"{%endifequal%} id="id_units_selector_mi" href="{% url banian.views.search_events %}?units=1">mi</a></td></tr></table></td></tr></table>
+<table class="list" id="id_search_results" style="margin-top:0em;">
+		<tr><td></td><td></td><td></td><td></td></tr>
+        <tr>
+		{% for event in event_list %}                    
+            <td style="width:160px;"><a href="{% url banian.views.view_event key=event.key %}">{% if event.thumbnail_image %}<img src="{% url banian.views.image key=event.thumbnail_image.key %}?medium=" alt="{{event.name}}" >{%else%}<img src="{{ MEDIA_URL }}global/BlueMonster100px.jpg" alt="{{event.name}}">{%endif%}</a><br> <strong>{{event.name}}</strong><br>{{ event.firstdate|date:"b j, P" }}<br>{{ event.venue.name}} ({{event.distance|floatformat:"1"}} {%ifequal units 1%}mi{%else%}km{%endifequal%})</td>
+            {% if forloop.counter|divisibleby:"4" %}</tr><tr>{% endif %}
+            {% empty %}
+            <tr><td colspan="6"><i><br><br>{%if user_loc%}No event match your search criteria{%else%}Your location is undefined. Click <a href="{% url banian.views.settings %}">here</a> to enter your address and start searching events.{%endif%}</i><br><br><br></td></tr>
+        {% endfor %}
+        <td></td></tr>
+    </table>
+ 
+ {% if is_paginated %}
+ <ul id="pagination-digg-bottom">
+ {% if has_previous %}
+ <li class="previous"><a href="?page={{ previous }}">&lt;&lt; Previous</a></li>
+ {% else %}
+ <li class="previous-off">&lt;&lt; Previous</li>
+ {% endif %}
+<li class="active">{{ page }} of {{ pages}}</li>
+{% if has_next %}
+ <li class="next"><a href="?page={{ next }}">Next &gt;&gt;</a></li>
+ {% else %}
+ <li class="next-off">Next &gt;&gt;</li>
+ {% endif %}
+ </ul>
+ {% endif %}
+ 
+
+ <p></p>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'contentbase.html' %}
+{% block title %}Confirm Representation Publication{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Publish Representation</legend>
+<div class="notice">Do you really want to publish <strong>{{representation.event.name }}, {{ representation.date }} </strong> ?</message></div>
+<p><strong>To publish this representation you will be asked to pre-approve payments totaling {{representation.total_cost|floatformat:2}} $:</strong>
+<li> {{representation.publishing_cost|floatformat:2}} $ for publishing {{representation.event.nbr_assigned_seats}} tickets (at 0.01$/ticket).</li>
+{% if representation.comission_cost %}<li>Up to {{representation.comission_cost|floatformat:2}} $ in comission if the representation solds out (1% of {{representation.event.representation_value|floatformat:2}} $).</li>{%endif%} 
+</p>
+<p><br></p>
+<form action="" method="post">
+<input type="image" src="{{ MEDIA_URL }}global/button_confirm.gif" alt="Confirm" name="create" value="create">
+<a href="{% url banian.views.show_representation key=representation.key %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+</form>
+</fieldset>
+{% endblock %}

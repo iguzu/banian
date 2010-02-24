@@ -1,0 +1,53 @@
+{% extends "contentbase.html" %}
+{% block title %}Event Detail{% endblock %}
+{% block content-leftpane %}
+  <fieldset><legend class="title">{{object.name}}</legend>
+   <div  style="width:100%;text-align:right">
+	<a class="sexybutton" href="{% url banian.views.download_tickets%}?user_event_key={{object.key}}"><span><span><span class="preview">View All Tickets</span></span></span></a>
+   </div>
+   <fieldset><legend>Event Details</legend>
+   <table><tr>{% if object.poster_image %}<td style="vertical-align:top;"><img src="{% url banian.views.image key=object.poster_image.key %}" alt="{{object.name}}"></td>{% endif %}<td>
+   		<table>
+          <tr><td><strong>Event:</strong></td><td>{{ object.name }}{%if object.event_web_site%}<br><a href="{{ object.event_web_site }}">{{ object.event_web_site }}</a>{%endif%}</td></tr>
+{%if object.description%}          <tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>{%endif%}
+{%if object.limit_duration%}          <tr><td><strong>Duration:</strong></td><td>{{ object.duration  }} minutes</td></tr>{%endif%}
+          <tr><td><strong>Venue:</strong></td><td>{{object.venue_name}}{%if object.venue_web_site%}<br><a href="{{ object.venue_web_site }}">{{ object.venue_web_site }}</a></td></tr>{%endif%}
+          <tr><td><strong>Address:</strong></td><td>{{object.venue_address}}</td></tr> 
+          <tr><td><strong>Representation:</strong></td><td>{{ object.representation_date|date:"M jS Y G:i"}} ({{object.venue_timezone}})</td></tr>
+          <tr><td><strong>Open at:</strong></td><td>{{ object.representation_door_date|date:"G:i"}}</td></tr>
+{%if object.note%}          <tr><td><strong>Note:</strong></td><td>{{ object.note }}</td></tr>{%endif%}
+      </table>      
+  </td></tr></table>
+  </fieldset>
+<fieldset><legend>Tickets</legend>
+   		<table>
+          <tr><td>You have {{object.nbr_tickets}} Tickets, totaling a value of {{ object.total_amount|floatformat:2 }} $</td></tr>
+      </table>      
+
+
+	<table>
+    <thead>
+        <tr>
+            <th>Ticket ID</th><th>Status</th><th>Location</th><th>Seat</th><th>Class</th><th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in ticket_set %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td class="row">{%ifequal ticket.status 'Valid'%}<a href="{% url banian.views.download_ticket key=ticket.key %}?user_event={{object.key}}">{{ticket.t_id }}</a>{%else%}{{ticket.t_id }}{%endifequal%}</td>
+                <td class="row">{{ticket.status}}</td>
+                <td class="row">{{ticket.location_str}}</td>
+                <td class="row">{{ticket.number}}</td>
+                <td class="row">{{ticket.ticket_class_name}}</td>
+                <td class="row">{{ticket.price|floatformat:2}} $</td>
+            </tr>
+		{% empty %}
+		<tr><td colspan="2"><i>No ticket found for this transaction</i></td></tr>
+        {% endfor %}
+    </tbody>     
+  </table>
+</fieldset>
+ <a class="sexybutton" href="{% url banian.views.user_events %}"><span><span><span class="redo">Back</span></span></span></a>
+</fieldset> 
+{% endblock %}
+

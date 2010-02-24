@@ -1,0 +1,123 @@
+{% extends "contentbase.html" %}
+{% block title %}Validate Tickets{% endblock %}
+{% block extra-head %}
+<script type="text/javascript">
+<!--
+$(document).ready( function() {	
+	$("#id_lookupTicketID").click(function(event) {
+	var seat_number = $("#id_ticket_number").val()
+	$.getJSON("{% url banian.views.validate key=object.key %}" + "?seat_number=" + seat_number,
+		        function(data){
+		        	$("#id_ticket_id").val(data.t_id);
+		        	if (data.error) {
+		        		$("#id_message").attr("class","error")
+		        	} else {
+		        		$("#id_message").attr("class","notice")
+		        	}
+		        	$("#id_message").html(data.message_html);
+		        	$("#id_cmessage").html('');
+		        	$("#id_cmessage").removeAttr("class")
+        });
+		event.preventDefault();
+	});
+
+	$("#id_validateTicketID").click(function(event) {
+	var ticket_id = $("#id_ticket_id").val()
+	$.getJSON("{% url banian.views.validate key=object.key %}" + "?ticket_id=" + ticket_id,
+	       function(data){
+	       	$("#id_ticket_id").val('');
+	       	$("#id_ticket_number").val('');
+	       	if (data.error) {
+	       		$("#id_message").attr("class","error")
+	       	} else {
+	       		$("#id_message").attr("class","notice")
+	       	}
+	       	$("#id_message").html(data.message_html);
+	       	$("#id_cmessage").html('');
+	       	$("#id_cmessage").removeAttr("class")
+	       	var current_class = $("#id_table_scan").children().eq(0).attr("class");
+	       	$("#id_table_scan").prepend(data.scan_html);
+	       	if (current_class == "even") {
+	       		$("#id_table_scan").children().eq(0).attr("class","odd");
+	       	} else {
+	       		$("#id_table_scan").children().eq(0).attr("class","even");
+	       	}
+	 });
+		event.preventDefault()		
+	});
+	$("#id_reportTicketID").click(function(event) {
+	var ticket_id = $("#id_cticket_id").val()
+	$.getJSON("{% url banian.views.validate key=object.key %}" + "?cticket_id=" + ticket_id,
+	       function(data){
+	       	$("#id_cticket_id").val('');
+	       	if (data.error) {
+	       		$("#id_cmessage").attr("class","error")
+	       	} else {
+	       		$("#id_cmessage").attr("class","notice")
+	       	}
+	       	$("#id_cmessage").html(data.message_html);
+	       	$("#id_message").html('');
+	       	$("#id_message").removeAttr("class")
+	       	var current_class = $("#id_table_scan").children().eq(0).attr("class");
+	       	$("#id_table_scan").prepend(data.scan_html);
+	       	if (current_class == "even") {
+	       		$("#id_table_scan").children().eq(0).attr("class","odd");
+	       	} else {
+	       		$("#id_table_scan").children().eq(0).attr("class","even");
+	       	}
+	 });
+		event.preventDefault()		
+	});
+});
+ //-->
+  </script>
+<style type="text/css">
+ 	input[name=address] { width:450px ; }
+</style>
+{% endblock %}
+{% block content-leftpane %}
+{%if form.errors %}<div class= "error">{{ form.errors }}</div>{% endif %}
+ <h2>{{ object.event.name }}, {{ object.date|date:"l, F jS Y \a\t P" }}</h2>
+ 
+<form action="" method="post" enctype="multipart/form-data">    
+    <fieldset><legend>Ticket Validation</legend>
+        <table>
+         <tr><td></td><td>Enter a ticket number, to lookup the ticket ID from the database</td></tr>
+         <tr><td><label for="id_ticket_number">{{form.ticket_number.label}}:</label></td><td>{{form.ticket_number}}<button class="sexybutton"  id="id_lookupTicketID"><span><span><span class="search">Lookup</span></span></span></button></td></tr>
+         <tr><td></td><td>Validate the following Ticket ID and the the paper copy correspond.</td></tr>
+         <tr><td><label>{{form.ticket_id.label}}:</label></td><td><input id="id_ticket_id" style="width:300px"><button class="sexybutton"  id="id_validateTicketID"><span><span><span class="accept">Validate</span></span></span></button></td></tr>
+         <tr><td></td><td><div id="id_message"></div></td></tr>
+        </table>
+  </fieldset>
+    <fieldset><legend>Report Counterfeit Ticket</legend>
+        <table>
+         <tr><td></td><td>Manually enter a counterfeit ticket ID.</td></tr>
+         <tr><td><label>{{form.ticket_id.label}}:</label></td><td><input id="id_cticket_id" style="width:300px"><button class="sexybutton" id="id_reportTicketID"><span><span><span class="decline">Counterfeit</span></span></span></button></td></tr>
+         <tr><td></td><td><div id="id_cmessage"></div></td></tr>
+        </table>
+  </fieldset>
+
+   <fieldset><legend>Recent Scan</legend>
+
+  <table class="list">
+    <thead>
+        <tr>
+            <th>Ticket Number</th><th>Date scanned</th><th>Status</th><th>validator</th>
+        </tr>
+    </thead>
+    <tbody id="id_table_scan">
+        {% for scan in recent_scan %}
+            <tr class="{% cycle 'odd' 'even' %}">
+            	<td class="row">{{scan.t_id}}</td>
+                <td class="row">{{scan.date|date:"l, F jS Y \a\t P"}}</td>
+                <td class="row">{{scan.result}}</td>
+                <td class="row">{{scan.validator}}</td>
+            </tr>
+		{% empty %}
+		<tr><td colspan="4"><i>No Ticket scanned yet</i></td></tr>
+        {% endfor %}
+    </tbody>     
+  </table>   
+</fieldset>
+</form>
+{% endblock %}

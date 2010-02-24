@@ -1,0 +1,24 @@
+﻿application: banian-project
+version: 1
+runtime: python
+api_version: 1
+
+default_expiration: '3650d'
+
+handlers:
+- url: /xYBjv3Rdy8A2x8H4GH
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  secure: optional
+  login: admin
+
+- url: /media
+  static_dir: _generated_media
+  secure: optional
+
+- url: /task/.*
+  script: common/appenginepatch/main.py
+  login: admin
+
+- url: /.*
+  script: common/appenginepatch/main.py
+  secure: optional

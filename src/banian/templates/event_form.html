@@ -1,0 +1,155 @@
+{% extends "contentbase.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Event{% endblock %}
+{% block extra-head %}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+<script type="text/javascript">
+<!--
+ 	$(document).ready( function() {
+			$("#id_cancellable").click(function() {
+				if ($(this).val() == "") {
+						$('#cancellable_group').hide();
+					} else {
+						$('#cancellable_group').show();	
+					}
+			});
+			$("#id_limit_tickets").click(function() {
+				if ($(this).val() == "") {
+						$('#max_ticket_group').hide();
+					} else {
+						$('#max_ticket_group').show();	
+					}
+			});
+			$(function() {
+				var maxdate = new Date;
+				maxdate.setTime(Date.parse('{{form.max_onsale_date|date:"r"}}'))		
+				$('#id_onsale_date').datepicker({ showButtonPanel: true, showAnim:'fadeIn', minDate:new Date(),maxDate:maxdate});
+			});
+			$(function () {
+				$('#id_onsale_time').timepickr({rangeMin:['00','05','10','15','20','25','30','35','40','45','50','55']});
+ 			});			
+			if ($("#id_cancellable").val() == "") {
+				$('#cancellable_group').hide();
+			} else {
+				$('#cancellable_group').show();	
+			}
+			if ($("#id_limit_tickets").val() == "") {
+				$('#max_ticket_group').hide();
+			} else {
+				$('#max_ticket_group').show();	
+			}
+			$(function() {
+				$("#id_delay_slider").slider({
+					value:$('#id_cancel_delay').val(),
+					min: 1,
+					max: 90,
+					step: 1,
+					slide: function(event, ui) {
+						$("#id_cancel_delay").val(ui.value);
+					}
+				});
+				$("#id_cancel_delay").val($("#id_delay_slider").slider("value"));
+			}); 
+			$(function() {
+				$("#id_cancel_fees_slider").slider({
+					value:$('#id_cancel_fees').val(),
+					min: 0,
+					max: 90,
+					step: 1,
+					slide: function(event, ui) {
+						$("#id_cancel_fees").val(ui.value);
+					}
+				});
+				$("#id_cancel_fees").val($("#id_cancel_fees_slider").slider("value"));
+			});
+		
+			$(function() {
+				$("#id_duration_slider").slider({
+					value:$('#id_duration').val(),
+					min: 0,
+					max: 8,
+					step: 0.25,
+					slide: function(event, ui) {
+						$("#id_duration").val(ui.value);
+					}
+				});
+				$("#id_duration").val($("#id_duration_slider").slider("value"));
+			});	
+			$(function() {
+				$("#id_door_open_slider").slider({
+					value:60,
+					min: 0,
+					max: 180,
+					step: 15,
+					slide: function(event, ui) {
+						$("#id_door_open").val(ui.value);
+					}
+				});
+				$("#id_door_open").val($("#id_door_open_slider").slider("value"));
+			});
+			$(function() {
+				$("#id_max_tickets_slider").slider({
+					value:6,
+					min: 1,
+					max: 100,
+					step: 1,
+					slide: function(event, ui) {
+						$("#id_max_tickets").val(ui.value);
+					}
+				});
+				$("#id_max_tickets").val($("#id_max_tickets_slider").slider("value"));
+			});								
+											
+	});
+//-->
+ </script>
+{% endblock %}
+
+{% block content-leftpane %}
+<form action="{%if not object %}?venue={{ venue_key }}{% endif %}" method="post" enctype="multipart/form-data">
+{% if form.errors %}<div class="error">{{ form.errors }}</div>{% endif %}    
+    <fieldset><legend>Event Details</legend>
+    <fieldset><legend>Description</legend>
+        <table>
+         <tr><td><label for="id_name">{{form.name.label}}:</label></td><td>{{form.name}}</td></tr>
+         <tr><td><label for="id_performer">{{form.performer.label}}:</label></td><td>{{form.performer}}</td></tr>
+         <tr><td><label for="id_description">{{form.description.label}}:</label></td><td>{{form.description}}</td></tr>
+         <tr><td><label for="id_web_site">{{form.web_site.label}}:</label></td><td>{{form.web_site}}</td></tr>
+         <tr><td><label for="id_email">{{form.email.label}}:</label></td><td>{{form.email}}</td></tr>
+         <tr><td><label for="id_thumbnail">{{form.thumbnail.label}}:</label><br>{% if object.thumbnail_image %}{{ object.thumbnail_image.filename}}<br> <img src="{% url banian.views.image key=object.thumbnail_image.key %}?small=True" alt="{{object.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.thumbnail}}<br>{{form.thumbnail.help_text}}</td></tr>
+         <tr><td><label for="id_poster">{{form.poster.label}}:</label><br>{% if object.poster_image %}{{object.poster_image.filename}}<br><img src="{% url banian.views.image key=object.poster_image.key %}?small=True" alt="{{object.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.poster}}<br>{{form.poster.help_text}}</td></tr>
+         <tr><td><label for="id_note">{{form.note.label}}:</label></td><td>{{form.note}}</td></tr>
+        </table>
+    </fieldset>
+    <fieldset><legend>Settings</legend>
+   
+        <table>
+         <tr><td><label for="id_onsale_date">{{form.onsale_date.label}}:</label></td><td>{{form.onsale_date}}</td><td> ({{timezone}})</td></tr>
+         <tr><td><label for="id_onsale_time">{{form.onsale_time.label}}:</label><br><br><br></td><td>{{form.onsale_time}}<br><br><br></td></tr>
+         <tr><td><label for="id_duration">{{form.duration.label}}:</label><br><br><br></td><td>{{form.duration}} minutes</td></tr>
+         <tr><td></td><td><div id="id_duration_slider" style="width:300px"></div ></td></tr>
+         <tr><td><label for="id_door_open">{{form.door_open.label}}:</label><br><br><br></td><td>{{form.door_open}} minutes before the event</td></tr>
+         <tr><td></td><td><div id="id_door_open_slider" style="width:300px"></div ></td></tr>
+         <tr><td><label for="id_seat_configuration">{{form.seat_configuration.label}}:</label></td><td>{{form.seat_configuration}}</td></tr>
+         <tr><td><label for="id_cancellable">{{form.cancellable.label}}:</label></td><td>{{form.cancellable}}</td></tr>
+         <tr><td colspan="2"><table class="prepend-1" id="cancellable_group">
+	         <tr><td><label for="id_cancel_fees">{{form.cancel_fees.label}}:</label></td><td>{{form.cancel_fees}} %</td></tr>
+	         <tr><td></td><td><div id="id_cancel_fees_slider" style="width:300px"></div ></td></tr>
+	         <tr><td><label for="id_cancel_delay">{{form.cancel_delay.label}}:</label></td><td>{{form.cancel_delay}} days</td></tr>
+	         <tr><td></td><td><div id="id_delay_slider" style="width:300px"></div ></td></tr>
+	         </table></td></tr>
+	     <tr><td><label for="id_limit_tickets">{{form.limit_tickets.label}}:</label></td><td>{{form.limit_tickets}}</td></tr>
+	     <tr><td colspan="2"><table class="prepend-1" id="max_ticket_group">
+	         <tr><td><label for="id_max_tickets">{{form.max_tickets.label}}:</label></td><td>{{form.max_tickets}}</td></tr>
+	         <tr><td></td><td><div id="id_max_tickets_slider" style="width:300px"></div ></td></tr>    
+	     </table></td></tr>
+		</table>
+    </fieldset>
+   <input type="image" {% if object %}src="{{ MEDIA_URL }}global/button_save.gif" alt="Save"{% else %}src="{{ MEDIA_URL }}global/button_create.gif" alt="Create"{% endif %}>
+   {% if object %}
+   <a href="{% url banian.views.show_event key=object.key %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+   {% else %}
+    <a href="{% url banian.views.events %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+   {% endif %}
+    </fieldset>
+</form>
+{% endblock %}

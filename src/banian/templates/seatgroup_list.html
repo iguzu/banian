@@ -1,0 +1,31 @@
+{% extends "contentbase.html" %}
+{% block title %}Seat Group List{% endblock %}
+{% block content-leftpane %}
+    <h2>{{ venue.name }} Seat Group</h2>
+    <p class="span-12"></p>
+ <fieldset><legend>Seat groups</legend>  
+    <a href="{% url banian.venue.views.add_seat_group %}?seat_configuration={{ object.key }}"><img src="{{ MEDIA_URL }}global/button_add.gif" alt="Add" ></a>
+    <table class="list">
+        <thead>
+            <tr><th></th><th>Type</th><th>Seat Group Name</th><th>Seat Configuration</th><th>Parent</th><th>Nbr Seat</th></tr>
+        </thead>
+        <tbody>
+            {% for seat_group in seat_group_list %}
+                <tr class="{% cycle 'odd' 'even' %}">
+                    <td class="row"><a href="{% url banian.venue.views.edit_seat_group key=seat_group.key %}"><img src="{{ MEDIA_URL }}global/edit.gif" alt="edit" ></a></td>
+                    <td class="row">{{ seat_group.type }}</td>
+                    <td class="row"><a href="{% url banian.venue.views.show_seat_group key=seat_group.key %}">{{seat_group.name }}</a></td>
+                    <td class="row"><a href="{% url banian.venue.views.show_seat_config key=seat_group.seat_configuration.key %}">{{seat_group.seat_configuration.name }}</a></td>
+                    <td class="row">{% if seat_group.parent %}<a href="{% url banian.venue.views.show_seat_group key=seat_group.parent.key %}">{{seat_group.parent }}</a>{% else %}{{seat_group.parent }}{% endif %}</td>
+                    <td class="row">{{seat_group.nbr_seat }}</td>
+                </tr>
+             {%empty %}
+             <tr><td colspan="5"><i>Click Add to create a Seat Group</i></td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+</fieldset>   
+ <p></p>
+{% endblock %}

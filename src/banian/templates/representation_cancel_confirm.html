@@ -1,0 +1,11 @@
+{% extends 'contentbase.html' %}
+{% block title %}Cancel {{representation.event.name }}, {{representation.date}}{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Confirm Cancellation</legend>
+<div class="notice"> Do you really want to cancel <strong>{{representation.event.name}}</strong> scheduled to happen on  <strong>{{representation.date}}</strong>?</message></div>
+<form action="" method="post">
+<button class="sexybutton" type="submit"><span><span><span class="accept">Confirm</span></span></span></button>
+<a class="sexybutton"  href="{% url banian.views.show_event key=representation.event.key %}"><span><span><span class="cancel">Cancel</span></span></span></a>
+</form>
+</fieldset>
+{% endblock %}

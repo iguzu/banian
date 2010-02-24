@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<style type="text/css">
+.ticket {}
+</style>
+<link rel="stylesheet" href="{{ MEDIA_URL }}global/sexybuttons/sexybuttons2.css" type="text/css">
+      <link rel="stylesheet" type="text/css"  media="screen, projection" href="{{ MEDIA_URL }}combined-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css">
+      <link rel="stylesheet" type="text/css"  media="print" href="{{ MEDIA_URL }}combined-print-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css">
+      <!--[if IE]>
+        <link rel="stylesheet" type="text/css" media="screen, projection" href="{{ MEDIA_URL }}ie.css">
+      <![endif]-->
+<title>tickets</title>
+</head>
+<body>
+<div>
+<a class="sexybutton" href="javascript:window.print()"><span><span><span class="print">Print</span></span></span></a>
+{%if user_event_key%}
+<a class="sexybutton" href="{% url banian.views.show_user_event key=user_event_key %}"><span><span><span class="redo">back</span></span></span></a>
+{% endif %}
+{%if transaction_key%}
+<a class="sexybutton" href="{% url banian.views.show_transaction key=transaction_key %}"><span><span><span class="redo">back</span></span></span></a>
+{%endif%}
+{%if seat_key%}
+<a class="sexybutton" href="{% url banian.views.show_seat key=seat_key %}"><span><span><span class="redo">back</span></span></span></a>
+{%endif%}
+{%if preview%}
+<a class="sexybutton" href="{{preview_redirect}}"><span><span><span class="redo">back</span></span></span></a>
+{%endif%}
+</div>
+{% for object in ticket_set %}
+<div>
+<br>
+<table class="ticket" style="width:900px;height:240px;margin-bottom:0;border-style:solid;border-width:3px;"><tr><td>
+<table style="margin-bottom:0;"><tr><td style="width:190px;border-right-style:solid;border-right-width:1px;padding:5">
+{%if object.event_image%}<img src="{% url banian.views.image key=object.event_image.key %}" alt="{{object.event_name}}" >{%endif%}
+</td><td style="width:480px;height:186px;border-right-style:solid;border-right-width:1px;">
+<table style="vertical-align:top;margin-bottom:0;">
+	<tr><td style="font-size:10px;text-align:center;font-family:Arial;padding:0"><b>Paper copy cannot be resold. To buy & resell use http://www.iguzu.com</b></td></tr>
+	<tr><td style="font-size:16px;text-align:center;font-family:Arial;padding:0"><b>{{object.event_name}}</b></td></tr>
+	<tr><td style="font-size:12px;text-align:center;font-family:Arial;padding:0"><b>{{object.date|date:"l, F jS Y \a\t P"}} (Doors/Site open at {{object.door_date|date:"P"}})</b></td></tr>
+	<tr><td style="font-size:12px;text-align:center;font-family:Arial;padding:0"><b>{{object.venue_name}}</b><br>{{object.address}}</td></tr>
+	<tr><td>
+		<table style="margin-bottom:0;background:#cccccc;padding:5"><tr>
+			<td style="width:280px;height:80px;background:#ffffff;border:solid;border-color:#999999;border-width:2px;padding:3;font-size:10px;text-align:left;vertical-align:top;font-family:Arial">
+				{%if object.note%}{{object.note}}{%endif%}
+			</td>
+			<td style="width:164px;vertical-align:top;background:#999999;font-size:12px;text-align:left;font-family:Arial;padding:6">
+			{%if object.ticket_class_name%}<b>{{object.ticket_class_name}}</b><br>{%endif%}
+			{%for item in object.location%}
+			{% if item.name %}{{item.name}}<br>{%endif%}
+			{%endfor%}
+			{%if not object.general_admission%}Seat Number: {{object.number}}{%endif%}
+			</td>
+		</tr></table>	
+	</td></tr>
+	<tr><td><table style="margin-bottom:0;"><tr><td style="width:220px;text-align:left;font-size:10px;font-family:Arial" >{{object.t_id}}</td><td style="width:220px;text-align:right;font-size:10px;font-family:Arial">Price: {%if object.price%}{{object.price|floatformat:2}} ${%else%}Free{%endif%}</td></tr></table></td></tr>
+</table>
+</td><td style="width:190px">
+<img src="http://chart.apis.google.com/chart?chs=190x190&amp;chld=H|0&amp;cht=qr&amp;chl={{object.t_id}}" alt="qs code" >
+</td></tr></table>
+</td></tr></table>
+<br>
+<br>
+</div>
+{%endfor%}
+</body>
+</html>
+

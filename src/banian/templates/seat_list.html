@@ -1,0 +1,62 @@
+{% extends "contentbase.html" %}
+{% load istatus %}
+{% block title %}Tickets{% endblock %}
+{% block content-leftpane %}
+    <h2>{{event.name}} Tickets</h2>
+    <p class="span-12"></p>
+   <a class="sexybutton" href="{% url banian.views.show_event key=event.key %}"><span><span><span class='redo'>Back</span></span></span></a>
+    {% if is_paginated %}
+ <ul id="pagination-digg-top">
+ {% if has_previous %}
+ <li class="previous"><a href="?page={{ previous }}">&lt;&lt; Previous</a></li>
+ {% else %}
+ <li class="previous-off">&lt;&lt; Previous</li>
+ {% endif %}
+<li class="active">{{ page }} of {{ pages}}</li>
+{% if has_next %}
+ <li class="next"><a href="?page={{ next }}">Next &gt;&gt;</a></li>
+ {% else %}
+ <li class="next-off">Next &gt;&gt;</li>
+ {% endif %}
+ </ul><br>
+ {% endif %}
+    <table class="list">
+        <thead>
+            <tr><th>Location</th><th>Status</th><th>Price</th><th>Current Owner</th><th>Scanned</th></tr>
+        </thead>
+        <tbody>
+            {% for seat in seat_list %}
+                <tr class="{% cycle 'odd' 'even' %}">
+                    <td class="row"><a href="{% url banian.views.show_seat key=seat.key %}{%if page%}?redirect_page={{page}}{%endif%}">{%if seat.ticket_class.name%}{{seat.ticket_class.name}}<br>{%endif%}{%if seat.location%}}{{seat.location }}<br>{%endif%}Seat Number: {{seat.number}}</a></td>
+                    <td class="row">{{seat.availability|availabilitystatus }}</td>
+                    <td class="row">{{seat.ticket_class.price }}</td>
+                    <td class="row">{{seat.current_ticket.owner }}</td>
+                    <td class="row">{%if seat.current_ticket.used%}Yes{%else%}No{%endif%}</td>                    
+                </tr>
+             {% empty %}
+            <tr><td colspan="6"><i>No tickets generated</i></td></tr> 
+            {% endfor %}
+    </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+ 
+ {% if is_paginated %}
+ <ul id="pagination-digg-bottom">
+ {% if has_previous %}
+ <li class="previous"><a href="?page={{ previous }}">&lt;&lt; Previous</a></li>
+ {% else %}
+ <li class="previous-off">&lt;&lt; Previous</li>
+ {% endif %}
+<li class="active">{{ page }} of {{ pages}}</li>
+{% if has_next %}
+ <li class="next"><a href="?page={{ next }}">Next &gt;&gt;</a></li>
+ {% else %}
+ <li class="next-off">Next &gt;&gt;</li>
+ {% endif %}
+ </ul>
+ {% endif %}
+
+
+ <p></p>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<h2>Setup your Iguzu account</h2>
+{% if form.errors %}<div class="error">{% else %}{% if captchaerror %}<div class="error">{% endif %}{% endif %}
+    {% if form.errors %}{{ form.errors }}{% endif %}
+{% ifequal captchaerror  'incorrect-captcha-sol' %}<li>Incorrect captcha solution. Retry to identify the words.</li>{% else %}{%if captchaerror %}<li>{{ captchaerror }}</li>{% endif %}{% endifequal %}
+{% if form.errors %}</div>{% else %}{% if captchaerror %}</div>{% endif %}{% endif %}
+
+<form action="{{ request.path }}" method="post">
+    <div class="span-15 last">
+    <fieldset><legend>Register</legend>
+    <fieldset><legend>Account information</legend>
+    <table>
+        <tbody>
+            <tr><td><label for="{{ form.username.id }}">{{ form.username.label }}:</label></td><td > {{ form.username }}</td></tr>
+            <tr><td><label for="{{ form.name.id }}">{{ form.name.label }}:</label></td><td > {{ form.name }}</td></tr>
+            <tr><td><label for="{{ form.password1.id }}">{{ form.password1.label }}:</label></td><td > {{ form.password1 }}</td></tr>
+            <tr><td><label for="{{ form.password2.id }}">{{ form.password2.label }}:</label></td><td > {{ form.password2 }}</td></tr>
+            <tr><td colspan="2"><label>Word verification:</label></td>
+            <tr>
+                <td colspan="2"> {{ captchahtml|safe }} </td>
+            </tr>
+        </tbody>
+    </table></fieldset>
+    <fieldset><legend>Term of service</legend>
+    <p>This service is provided as is, with not warranty what's so ever.</p>
+    <p>{{form.tos}}<label for="{{form.tos.id}}">{{form.tos.label}}</label></p>
+    </fieldset>
+    <input type="submit" value="Register"> 
+    </fieldset>
+  </div>
+</form>
+{% endblock content %}

@@ -1,0 +1,104 @@
+{% extends "contentbase.html" %}
+{% block title %}Doorman List{% endblock %}
+{% block extra-head %}
+<script type="text/javascript">
+<!--
+	function deleteUser(key) {
+		$.getJSON("{% url banian.views.validator_list key=object.key %}" + "?del=del&key=" + key,
+		    function(data){
+		    	if (data.error) {
+		    		$("#id_message").attr("class","error")
+		    	} else {
+		    		$("#id_message").attr("class","notice")
+		    	}
+		    	$("#id_message").html(data.message_html);
+		    	var id = "#" + data.key
+		    	var node = $(id).parent().parent()
+		    	node.remove()
+		});		
+	}
+
+$(document).ready( function() {		
+	$("#id_addDoorman").click( function (event) {
+		var username = $("#id_username-door").val()
+		$.getJSON("{% url banian.views.validator_list key=object.key %}" + "?add=add&username=" + username,
+	        function(data){
+	        	$("#id_ticket_id").val(data.t_id);
+	        	if (data.error) {
+	        		$("#id_message").attr("class","error")
+	        	} else {
+	        		$("#id_message").attr("class","notice")
+	        		$("#id_username-door").val('')
+	        		var current_class = $("#id_table_doorman tr:last").attr("class");
+	        		var line = '<tr><td class="row">'
+	        		line = line + data.username
+	        		line = line + '<\/td><td class="row">'
+	        		line = line + data.name
+	        		line = line + '<\/td><td class="row"><button class="sexybutton" type="submit" name="delete" id="'
+	        		line = line + data.key
+	        		line = line + '"  onclick=deleteUser("'
+	        		line = line + data.key + '")><span><span><span class="delete">Delete<\/span><\/span><\/span><\/button><\/td><\/tr>'
+	        		console.log(line)
+	        		$("#id_table_doorman").append(line);	
+		    			if (current_class == "even") {
+		    				$("#id_table_doorman tr:last").attr("class","odd");
+		    			} else {
+		    				$("#id_table_doorman tr:last").attr("class","even");
+		    			}
+	        	}
+	        	$("#id_message").html(data.message_html);
+		});
+		event.preventDefault();
+	});	
+	
+	$("button[name='delete']").click(function(event) {
+		var key = $(this).attr('id')
+		$.getJSON("{% url banian.views.validator_list key=object.key %}" + "?del=del&key=" + key,
+		    function(data){
+		    	if (data.error) {
+		    		$("#id_message").attr("class","error")
+		    	} else {
+		    		$("#id_message").attr("class","notice")
+		    	}
+		    	$("#id_message").html(data.message_html);
+		    	var id = "#" + data.key
+		    	var node = $(id).parent().parent()
+		    	node.remove()
+		});
+	});
+});
+ //-->
+  </script>
+{% endblock %}
+{% block content-leftpane %}
+{%if form.errors %}<div class= "error">{{ form.errors }}</div>{% endif %}
+ <h2>{{ object.event.name }}</h2>
+<fieldset><legend>Doorman List</legend>
+<div>
+	<input type="text" id="id_username-door" name="username-door" />
+	<button class="sexybutton" type="submit" id="id_addDoorman"><span><span><span class="add">Add</span></span></span></button>
+	<div id="id_message"></div>
+</div> 
+  <table class="list">
+    <thead>
+        <tr>
+            <th>username</th><th>name</th><th></th>
+        </tr>
+    </thead>
+    <tbody id="id_table_doorman">
+        {% for doorman in doorman_list %}
+            <tr class="{% cycle 'odd' 'even' %}">
+            	<td class="row">{{doorman.username}}</td>
+                <td class="row">{{doorman.name}}</td>
+                <td class="row"><button class="sexybutton" type="submit" name="delete" id="{{doorman.key}}"><span><span><span class='delete'>Delete</span></span></span></button></td>
+            </tr>
+		{% empty %}
+		<tr><td colspan="3"><i>No doorman</i></td></tr>
+        {% endfor %}
+    </tbody>     
+  </table>
+      
+</fieldset>
+<div><a class="sexybutton" href="{% url banian.views.show_event key=object.key %}"><span><span><span class="redo">Back</span></span></span></a></div>
+
+{% endblock %}

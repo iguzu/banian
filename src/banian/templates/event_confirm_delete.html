@@ -1,0 +1,12 @@
+{% extends 'contentbase.html' %}
+{% block title %}Confirm Delete{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Delete event</legend>
+<div class="notice"> Do you really want to delete <strong>{{ object.name }}</strong> ?  This cannot be undone!!!!</div>
+<p><br></p>
+<form action="" method="post">
+<div><button class="sexybutton" type="submit" name="delete" value="Delete"><span><span><span class='accept'>Confirm</span></span></span></button>
+<a class="sexybutton" href="{% url banian.views.show_event key=object.key %}"><span><span><span class='cancel'>cancel</span></span></span></a>
+</div></form>
+</fieldset>
+{% endblock %}

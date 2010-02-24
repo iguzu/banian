@@ -1,0 +1,39 @@
+{% extends "contentbase.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Event{% endblock %}
+{% block extra-head %}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+<script type="text/javascript">
+<!--
+ 	$(document).ready( function() {
+					
+	});
+			
+//-->
+ </script>
+{% endblock %}
+
+{% block content-leftpane %}
+<fieldset><legend>Event Wizard</legend>
+<div id="tabs"><ul>{% for item in step_info %}
+<li {%ifequal forloop.counter0 step %}class="current"{%else%}{%if item.url%}class="completed"{%endif%}{%endifequal%}><a href="{%if item.url%}{{item.url}}{%else%}#{%endif%}"><span>{{item.name}}</span></a></li>{%endfor%}
+</ul></div>
+<p class="prepend-1"><strong>Step {{step|add:"1"}} of {{total_step}}</strong></p>
+<form action="" method="post" enctype="multipart/form-data">
+{% if form.errors %}<div class="error">{{ form.errors }}</div>{% endif %}
+<fieldset><legend>What image to put on ticket and purchase page?</legend>
+<table>
+         <tr><td><label for="id_thumbnail">{{form.thumbnail.label}}:</label><br>{% if form.instance.thumbnail_image %}{{ form.instance.thumbnail_image.filename}}<br> <img src="{% url banian.views.image key=form.instance.thumbnail_image.key %}?small=" alt="{{form.instance.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.thumbnail}}<br>{{form.thumbnail.help_text}}</td></tr>
+         <tr><td><label for="id_poster">{{form.poster.label}}:</label><br>{% if form.instance.poster_image %}{{form.instance.poster_image.filename}}<br><img src="{% url banian.views.image key=form.instance.poster_image.key %}?small=" alt="{{form.instance.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.poster}}<br>{{form.poster.help_text}}</td></tr>
+
+         <tr><td><label for="id_note">{{form.note.label}}:</label></td><td>{{form.note}}</td></tr>
+</table>
+</fieldset>
+<div>
+<a class="sexybutton" href="{{previous_step_url}}"><span><span><span class="prev">Previous</span></span></span></a>
+<button class="sexybutton" id="id_submit_type-next" type="submit" name="next" value="next"><span><span><span class="next">Next</span></span></span></button>
+<button class="sexybutton" id="id_submit_type-save" type="submit" name="save" value="save"><span><span><span class="save">Save</span></span></span></button>
+<a class="sexybutton" href="{%url banian.views.show_event key=form.instance.key%}"><span><span><span class="redo">Back</span></span></span></a>
+</div>
+</form>
+</fieldset>
+{% endblock %}

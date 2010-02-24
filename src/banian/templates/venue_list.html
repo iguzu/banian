@@ -1,0 +1,26 @@
+{% extends "contentbase.html" %}
+{% block title %}Venue List{% endblock %}
+{% block content-leftpane %}
+    <h2>Venues</h2>
+    <p class="span-12">To start managing ticket's sales on iguzu, you need to create Venues &lt; Events. Use the list below to create your venues. </p>
+    <a href="{% url banian.venue.views.add_venue %}"><img src="{{ MEDIA_URL }}global/button_add.gif" alt="Add" ></a>
+    <table class="list">
+        <thead>
+            <tr><th></th><th>Venue Name</th><th>Web Site</th></tr>
+        </thead>
+        <tbody>
+            {%if not venue_list %}
+            <tr><td colspan="3"><i>Click Add to create a venue</i></td></tr>
+            {% else %}
+            {% for venue in venue_list %}
+                <tr class="{% cycle 'odd' 'even' %}">
+                	<td class="row"><a href="{% url banian.venue.views.show_venue key=venue.key %}">{% if venue.thumbnail_image %}<img src="{% url banian.views.image key=venue.thumbnail_image.key %}?medium=" alt="{{venue.name}}" >{%else%}<img src="{{ MEDIA_URL }}global/BlueMonster100px.jpg"alt="{{venue.name}}">{%endif%}</a></td>
+                    <td class="row"><a href="{% url banian.venue.views.show_venue key=venue.key %}">{{venue.name }}</a></td>
+                    <td class="row"><a href="{{venue.web_site }}">{{venue.web_site }}</a></td>
+                </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+ <p></p>
+{% endblock %}

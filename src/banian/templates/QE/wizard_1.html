@@ -1,0 +1,125 @@
+{% extends "contentbase.html" %}
+{% block doc-declaration %}
+<!DOCTYPE HTML SYSTEM>
+<html>
+{% endblock %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Event{% endblock %}
+{% block extra-head %}
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" >
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+<script type="text/javascript">
+<!--
+var map;
+var geocoder;
+var marker = new google.maps.Marker()
+
+  function geocode() {
+    var address = document.getElementById("id_address").value;
+    var name = document.getElementById("id_name").value;
+    geocoder.geocode({
+      'address': address,}, geocodeResult);
+  }
+
+  function geocodeResult(results, status) {
+    if (status == 'OK' && results.length > 0) {
+      map.fitBounds(results[0].geometry.viewport);
+    	marker.setPosition(map.getCenter())
+    	marker.setTitle(name);
+		map.setZoom(15);
+		var accuracy = results[0].geometry.location_type
+		if ((accuracy == "ROOFTOP") || (accuracy == "RANGE_INTERPOLATED")) {
+			$("#geocoding-message").text("")
+		} else {
+			$("#geocoding-message").text("Address is not accurate enough");
+		}
+		if (results.length > 1) {
+			var text = $("#geocoding-message").text() 
+			if  (text.length > 0) {
+				$("#geocoding-message").html(text + "<br>");
+			}
+				$("#geocoding-message").html($("#geocoding-message").html() + "This address returned more than one results");
+		}
+    } else {
+      $("#geocoding-message").text("Geocode was not successful for the following reason: " + status);
+    }
+  }
+
+
+ function initialize() {
+	var latlng = new google.maps.LatLng(0,0);
+	var myOptions = {
+	zoom: 1,
+	  disableDefaultUI: true,
+	  center: latlng,
+	  mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	geocoder = new google.maps.Geocoder();
+	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	{%if form.instance.venue.address%}
+	geocode()
+	{%endif%}
+	marker.setMap(map)
+ }
+ 	$(document).ready( function() {
+		$("#id_validate").click(function(event) {
+			geocode()
+			event.preventDefault();
+		});
+
+		$("#id_address").keydown(function(e) {
+			if (e.which == 13) {
+				geocode();
+				e.preventDefault();
+			}
+		});
+
+		$("#id_address").keypress(function(e) {
+			if (e.which == 13) {
+				e.preventDefault();
+			}
+		});
+
+		$("#id_address").keyup(function(e) {
+			if (e.which == 13) {
+				e.preventDefault();
+			}
+		});
+
+		
+	});	
+//-->
+</script>
+<script type="text/javascript">
+<!--
+//-->
+ </script>
+
+
+{% endblock %}
+{% block body-tag %}<body onload="initialize()">{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend>Event Wizard</legend>
+<div id="tabs"><ul>{% for item in step_info %}
+<li {%ifequal forloop.counter0 step %}class="current"{%else%}{%if item.url%}class="completed"{%endif%}{%endifequal%}><a href="{%if item.url%}{{item.url}}{%else%}#{%endif%}"><span>{{item.name}}</span></a></li>{%endfor%}
+</ul></div>
+<p class="prepend-1"><strong>Step {{step|add:"1"}} of {{total_step}}</strong></p>
+<form action="" method="post" enctype="multipart/form-data">
+{% if form.errors %}<div class="error">{{ form.errors }}</div>{% endif %}
+<fieldset><legend>Where the event will take place?</legend>
+<table>
+         <tr><td><label for="id_name">{{form.name.label}}:</label></td><td>{{form.name}}</td></tr>         
+         <tr><td><label for="id_address">{{form.address.label}}:</label></td><td>{{form.address}}<a class="sexybutton" id="id_validate" href=""><span><span><span class="search">Validate</span></span></span></a></td></tr>
+</table>
+<div id="geocoding-message"></div>
+<div id="map_canvas" style="width:450px;height:200px;border:2px solid #ccc;"></div>
+</fieldset>
+<div>
+<a class="sexybutton" href="{{previous_step_url}}"><span><span><span class="prev">Previous</span></span></span></a>
+<button class="sexybutton" id="id_submit_type-next" type="submit" name="next" value="next"><span><span><span class="next">Next</span></span></span></button>
+<button class="sexybutton" id="id_submit_type-save" type="submit" name="save" value="save"><span><span><span class="save">Save</span></span></span></button>
+<a class="sexybutton" href="{%url banian.views.show_event key=form.instance.key%}"><span><span><span class="redo">Back</span></span></span></a>
+</div>
+</form>
+</fieldset>
+{% endblock %}

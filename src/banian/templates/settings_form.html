@@ -1,0 +1,115 @@
+{% extends "contentbase.html" %}
+{% block title %}Edit Account Settings{% endblock %}
+{% block extra-head %}
+<style type="text/css">
+ 	input[name=address] { width:400px ; }
+ 	input[name=paypal_id] { width:300px ; }
+ 	input[name=name] { width:300px ; }
+</style>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" >
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript">
+<!--
+var map;
+var geocoder;
+var marker = new google.maps.Marker()
+
+  function geocode() {
+    var address = document.getElementById("id_address").value;
+    var name = document.getElementById("id_name").value;
+    geocoder.geocode({
+      'address': address,}, geocodeResult);
+  }
+
+  function geocodeResult(results, status) {
+    if (status == 'OK' && results.length > 0) {
+      map.fitBounds(results[0].geometry.viewport);
+    	marker.setPosition(map.getCenter())
+    	marker.setTitle(name);
+		map.setZoom(15);
+		var accuracy = results[0].geometry.location_type
+		if ((accuracy == "ROOFTOP") || (accuracy == "RANGE_INTERPOLATED")) {
+			$("#geocoding-message").text("")
+		} else {
+			$("#geocoding-message").text("Address is not accurate enough");
+		}
+		if (results.length > 1) {
+			var text = $("#geocoding-message").text() 
+			if  (text.length > 0) {
+				$("#geocoding-message").html(text + "<br>");
+			}
+				$("#geocoding-message").html($("#geocoding-message").html() + "This address returned more than one results");
+		}
+    } else {
+      $("#geocoding-message").text("Geocode was not successful for the following reason: " + status);
+    }
+  }
+
+
+ function initialize() {
+	var latlng = new google.maps.LatLng(0,0);
+	var myOptions = {
+	zoom: 1,
+	  disableDefaultUI: true,
+	  center: latlng,
+	  mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	geocoder = new google.maps.Geocoder();
+	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	{%if form.address%}
+	geocode()
+	{%endif%}
+	marker.setMap(map)
+ }
+ 	$(document).ready( function() {
+		$("#id_validate").click(function(event) {
+			geocode()
+			event.preventDefault();
+		});
+
+		$("#id_address").keydown(function(e) {
+			if (e.which == 13) {
+				geocode();
+				e.preventDefault();
+			}
+		});
+
+		$("#id_address").keypress(function(e) {
+			if (e.which == 13) {
+				e.preventDefault();
+			}
+		});
+
+		$("#id_address").keyup(function(e) {
+			if (e.which == 13) {
+				e.preventDefault();
+			}
+		});
+
+		
+	});	
+//-->
+</script>
+
+
+{% endblock %}
+{% block body-tag %}<body onload="initialize()">{% endblock %}
+{% block content-leftpane %}
+{%if form.errors %}<div class= "error">{{ form.errors }}</div>{% endif %}
+<form action="" method="post" enctype="multipart/form-data">    
+    <fieldset><legend>Account Settings</legend>
+        <table>
+        <tr><td><label>Account/Username:</label></td><td>{{username}}</td><td ></td></tr>
+         <tr><td><label for="id_name">Name:</label></td><td>{{ form.name }}</td><td ></td></tr>
+         <tr><td><label for="id_paypal_id">Paypal ID:</label></td><td>{{form.paypal_id}}</td><td ></td></tr>
+         <tr><td><label for="id_address">Address:</label></td><td>{{ form.address }}<a class="sexybutton" id="id_validate" href=""><span><span><span class="search">Validate</span></span></span></a></td><td ></td></tr>
+        <tr><td></td><td>
+		<div id="geocoding-message"></div>
+		<div id="map_canvas" style="width:450px;height:200px;border:2px solid #ccc;"></div>
+		</td></tr>
+         <tr><td><label for="id_time_format">Time Format:</label></td><td>{{form.time_format}}</td><td ></td></tr>
+        </table>
+</fieldset>
+<div><button class="sexybutton" type="submit"><span><span><span class="save">Save</span></span></span></button></div>
+</form>
+{% endblock %}

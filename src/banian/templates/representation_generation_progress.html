@@ -1,0 +1,49 @@
+{% extends "contentbase.html" %}
+{% block title %}Representation{% ifequal representation.status "Canceling" %} Deletion{%else%} Generation{%endifequal%}{% endblock %}
+{% block extra-head %}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+<script type="text/javascript">
+<!--
+{%if representation.isjob%}
+	var count = {{progress}};
+	var message = '{{message}}, {{progress|floatformat:0}} % completed';
+	function updateProgress() {
+ 		if (count < 100 ) {
+	 		$.getJSON("{% url banian.views.show_representation_job_progess key=representation.generation_job_id %}?ajax=true",
+		        function(data){
+		        	count = data.progress.toFixed(0)
+		        	message = data.message + ', ' + count + ' % completed'
+	        });
+	        $("#progressbar").progressbar('option','value',count);
+			$("#progressbar-message").text(message);
+			setTimeout("updateProgress();",1500);
+		}
+		else {
+			$("#progressbar").progressbar('option','value',count);
+			$("#progressbar-message").text(message);
+			$("#status").text('{% ifequal representation.status "Canceling" %}Draft{%else%}Published{%endifequal%}');
+		}
+	}
+ 	$(document).ready( function() {
+ 		$("#progressbar").progressbar({ value: count })
+		updateProgress();
+ 	});
+ {%endif%}
+ //-->
+  </script>
+{% endblock %}
+{% block content-leftpane %}
+   <fieldset><legend class="title">{{ object.event.name }}</legend>
+<div width="100%" style="text-align:right">
+ </div>
+   <fieldset><legend>{% ifequal representation.status "Canceling" %}Deletion{%else%}Generation{%endifequal%} Details</legend>
+      <table>
+          <tr><td><strong>Date:</strong></td><td>{{ representation.date|date:"l, F jS Y" }}</td></tr>
+          <tr><td><strong>Time:</strong></td><td>{{ representation.date|date:"P" }}</td></tr>
+          <tr><td><strong>Status:</strong></td><td id="status">{{ representation.status }}</td></tr>
+          <tr><td><strong>{% ifequal representation.status "Canceling" %}Deletion{%else%}Generation{%endifequal%} Progress:</strong></td><td><div id="progressbar"></div></br><div id="progressbar-message"></div></td></tr>
+      </table>
+  </fieldset>
+ <a href="{% url banian.views.show_representation key=representation.key %}"><img src="{{ MEDIA_URL }}global/button_representation.gif" alt="Representation" ></a>
+</fieldset> 
+{% endblock %}
