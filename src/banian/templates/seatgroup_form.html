@@ -1,0 +1,12 @@
+{% extends "contentbase.html" %}
+{% block title %}{% if object %}Edit{% else %}Create{% endif %} Seat Group{% endblock %}
+{% block content-leftpane %}
+<form action="{%if parent_key %}?parent={{ parent_key }}{% if seat_configuration_key %}&seat_configuration={{ seat_configuration_key }}{% endif %}{% endif %}" method="post" enctype="multipart/form-data">    
+    <fieldset><legend>Seat Group Details</legend>
+        <table>
+         {{ form }}
+        </table>
+   <input type="image" {% if object %}src="{{ MEDIA_URL }}global/button_save.gif" alt="Save"{% else %}src="{{ MEDIA_URL }}global/button_create.gif" alt="Create"{% endif %}>
+    <a href="{{ request.META.HTTP_REFERER }}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+    </fieldset>
+{% endblock %}

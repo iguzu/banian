@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+{% if form.errors %}<div class="error">Username and/or password is invalid</div>{% endif %}
+<div class="span-15 last">
+<form action="{{ request.get_full_path }}" method="post">
+  <fieldset><legend>Login information</legend>
+   <table>
+   	<tr><td><label>Username: </label></td><td> {{ form.username }}</td></tr>
+   	<tr><td><label>Password: </label></td><td>{{ form.password }}</td></tr>
+  	<tr><td><button class="sexybutton" type="submit"><span><span><span class="ok">Login</span></span></span></button></td></tr>
+  	<tr><td colspan="5"><a href="../password/reset/">Forgot your password?</a></td></tr>
+   </table>
+  </fieldset>
+</form><br>
+</div>
+<script type="text/javascript">
+<!--
+document.getElementById('id_username').focus()
+//-->
+</script>
+{% endblock content %}

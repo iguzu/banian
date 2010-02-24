@@ -1,0 +1,106 @@
+{% extends "contentbase.html" %}
+{% load istatus %}
+{% block title %}Event Detail{% endblock %}
+{% block extra-head %}
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+<script type="text/javascript">
+<!--
+{%if object.first_representation.job_id%}
+	var count = {{progress}};
+	var message = '{{message}}, {{progress|floatformat:0}} % completed';
+	var available = 0;
+	var value = 0.0;
+	function updateProgress() {
+ 		if (count < 100 ) {
+	 		$.getJSON("{% url banian.views.show_representation_job_progess key=object.first_representation.job_id %}?ajax=true&representation={{object.first_representation.key}}",
+		        function(data){
+		        	count = data.progress.toFixed(0)
+		        	message = data.message + ', ' + count + ' % completed'
+		        	available = data.available
+		        	value = data.value.toFixed(2)
+	        });
+	        $("#progressbar").progressbar('option','value',count);
+			$("#progressbar-message").text(message);
+			setTimeout("updateProgress();",1500);
+		}
+		else {
+			$("#progressbar").progressbar('option','value',count);
+			$("#progressbar-message").text(message);
+			{% ifequal object.first_representation.status "Canceling" %}
+				$("#status").text('Draft');
+				$("#publish-button").show()
+				$("#cancel-button").hide()
+				$("#tickets-button").hide()
+				$("#unpublish-button").hide();
+				$("#tickets-doorman").hide();
+				$("#id_value").html("0.0");
+				$("#id_available").html("0/0");
+			{%else%}
+				$("#status").text('Published');
+				$("#publish-button").hide()
+				$("#tickets-doorman").show();
+				$("#unpublish-button").show();
+				$("#tickets-button").show();				
+				$("#id_value").html(available + "/" + available);
+				$("#id_available").html(value);
+				
+			{%endifequal%}
+		}
+	}
+ 	$(document).ready( function() {
+ 		$("#progressbar").progressbar({ value: count })
+		updateProgress();
+ 	});
+ {%endif%}
+ //-->
+  </script>
+{% endblock %}
+
+{% block content-leftpane %}
+{%if object.first_representation.job_id%}
+<div id="jobstatus" class="info">
+<strong>{% ifequal object.first_representation.status "Canceling" %}Cancelling{%else%}Generation{%endifequal%} Progress: </strong><div id="progressbar-message"></div><div id="progressbar"></div>
+</div>
+{%endif%}
+  <fieldset><legend class="title">{{ object.name }}</legend>
+ {%ifequal object.first_representation.status 'Draft'%}{%ifequal object.max_step 5%}<div class="notice">This event is not yet published. Use the publish button to publish your event once you are ready to announce it</div>
+{%endifequal%}{%endifequal%}  
+ {%if display_link_message%}<div class="notice">Use the following hyperlink in your email or web site to allow people to purchase your event tickets:<br><strong>http://www.iguzu.com{%url banian.views.view_event key=object.key%}</strong></div>{%endif%}
+
+
+{%if object.first_representation%}
+ <div style="text-align:right">
+  <a class="sexybutton" {%ifnotequal object.first_representation.status "Draft" %}style="display:none"{%else%}{%ifnotequal object.max_step 5%}style="display:none"{%endifnotequal%}{%endifnotequal%} id="publish-button" href="{% url banian.views.publish key=object.first_representation.key %}"><span><span><span class="reload">Publish</span></span></span></a>
+  <a class="sexybutton" {%ifnotequal object.first_representation.status "Processing Payment" %}style="display:none"{%endifnotequal%} id="approve-button" href="{% url banian.views.publish key=object.first_representation.key %}"><span><span><span class="accept">Approve</span></span></span></a>
+  <a class="sexybutton" {%if not display_cancel %}style="display:none"{%endif%} id="cancel-button" href="{% url banian.views.cancel_representation key=object.first_representation.key %}" ><span><span><span class="cancel">Cancel</span></span></span></a>
+  <a class="sexybutton" {%if not display_unpublish %}style="display:none"{%endif%} id="unpublish-button" href="{% url banian.views.unpublish_representation key=object.first_representation.key %}" ><span><span><span class="cancel">Unpublish</span></span></span></a>
+  <a class="sexybutton" {%if not display_doorman%}style="display:none"{%endif%} id="tickets-doorman" href="{% url banian.views.validator_list key=object.key %}"><span><span><span class="group">Doormans</span></span></span></a>
+  <a class="sexybutton" {%ifequal object.first_representation.status "Draft" %}style="display:none"{%endifequal%} id="tickets-button" href="{% url banian.views.seats key=object.first_representation.key %}"><span><span><span class="table">Tickets</span></span></span></a>
+ </div>
+{%endif%}
+ <table><tr>{% if object.poster_image %}<td><img src="{% url banian.views.image key=object.poster_image.key %}" alt="Event Poster"></td>{% endif %}<td>
+   
+   <fieldset><legend>Event Details</legend>
+         <table>
+          <tr><td><strong>Status:</strong></td><td>{{ object.first_representation.status }}</td></tr>
+          <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>          
+          <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
+          <tr><td><strong>Date:</strong></td><td>{{ object.first_representation.date|date:"l, F jS Y \a\t P" }}</td></tr>
+          <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
+          <tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>                    
+          <tr><td><strong>Web Site:</strong></td><td>{%if object.web_site%}<a href="{{ object.web_site }}">{{ object.web_site }}</a>{%endif%}</td></tr>
+          <tr><td><strong>email:</strong></td><td>{%if object.email%}<a href="mailto:{{ object.email }}">{{ object.email }}</a>{%endif%}</td></tr>
+          <tr><td><strong>Duration:</strong></td><td>{%if object.limit_duration%}{{ object.duration  }} minutes{%else%}None{%endif%}</td></tr>
+          <tr><td><strong>Door opens/Access:</strong></td><td>{{ object.door_open|floatformat:0  }} minutes before the event</td></tr>
+          <tr><td><strong>Note:</strong></td><td>{{ object.note  }}</td></tr>                    
+      </table>      
+  </fieldset>
+  </td></tr></table>
+{%if object.mutable %}
+  <a class="sexybutton" href="{% url banian.views.edit_event key=object.key%}"><span><span><span class="edit">Edit</span></span></span></a>
+  <a class="sexybutton" href="{% url banian.views.delete_event key=object.key %}"><span><span><span class="delete">Delete</span></span></span></a>
+ {%endif%} 
+  <a class="sexybutton" href="{% url banian.views.events %}"><span><span><span class="redo">Back</span></span></span></a>
+</fieldset> 
+{% endblock %}
+

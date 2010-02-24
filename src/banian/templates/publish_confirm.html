@@ -1,0 +1,21 @@
+{% extends 'contentbase.html' %}
+{% block title %}Confirm Event Publication{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Publish Event</legend>
+<div class="notice">Do you really want to publish <strong>{{representation.event.name }} </strong> ?</div>
+<div><strong>To publish this event you will be asked to pre-approve payments totaling {{representation.total_cost|floatformat:2}} $:</strong>
+{% if representation.total_cost %}
+<ul class="prepend-1">
+{% if representation.publishing_cost %}<li> {{representation.publishing_cost|floatformat:2}} $ for publishing {{representation.event.nbr_assigned_seats}} tickets (at 0.01$/ticket).</li>{%endif%}
+{% if representation.commission_cost %}<li>Up to {{representation.commission_cost|floatformat:2}} $ in comission if the event solds out (1% of {{representation.event.representation_value|floatformat:2}} $).</li>{%endif%}</ul>
+{%endif%}
+<br>
+</div>
+<form action="" method="post">
+<div>
+<button class="sexybutton" type="submit"  name="create" value="create"><span><span><span class="accept">Confirm</span></span></span></button>
+<a class="sexybutton" href="{% url banian.views.show_event key=representation.event.key %}"><span><span><span class="cancel">cancel</span></span></span></a>
+</div>
+</form>
+</fieldset>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "contentbase.html" %}
+{% block title %}Transaction Detail{% endblock %}
+{% block extra-head %}
+<script type="text/javascript">
+<!--
+{%if not object.ticket_set%}
+	var status = 0
+	var html = ''
+	var total = 0.0
+	function lookupTickets() {
+ 		$.getJSON("{% url banian.views.show_transaction key=object.key %}?ajax=true",
+	        function(data){
+	        	status = data.status
+	        	html = data.html
+        });
+        if (status == 1) {
+        	$("#id_ticket_list").html(html);
+        } else {
+        	setTimeout("lookupTickets();",1500);
+        }
+	}
+ 	$(document).ready( function() {
+		lookupTickets();
+ 	});
+ {%endif%}
+ //-->
+ </script>
+ {% endblock %}
+{% block content-leftpane %}
+{% if new %}<div class="notice">Thank you for making your purchase via Iguzu. Your order has been placed and your tickets will be generated within few minutes.<br>A copy of this order will be sent shorty by email at {{ object.owner.username }}.</div>{%endif%}
+  <fieldset><legend class="title">Ticket {{object.type}} -- {{object.date|date:"M jS Y G:i:s"}}</legend>
+   <div style="text-align:right">
+	<a class="sexybutton" href="{% url banian.views.download_tickets%}?transaction_key={{object.key}}"><span><span><span class="preview">View All Tickets</span></span></span></a>
+   </div>
+   <fieldset><legend>Transaction Details</legend>
+         <table>
+          <tr><td><strong>Transaction ID:</strong></td><td>{{ object.t_id }}</td></tr>
+          <tr><td><strong>Date of {{object.type}}:</strong></td><td>{{ object.date|date:"M jS Y G:i:s" }}</td></tr>
+          <tr><td><strong>Type:</strong></td><td>{{ object.type }}</td></tr>
+          <tr><td><strong>Ticket Purchased:</strong></td><td>{{ object.nbr_tickets }}</td></tr>
+          <tr><td><strong>{{object.type}} Amount:</strong></td><td id="id_total_amount">{{ object.total_amount|floatformat:2 }} $</td></tr>
+          </table>
+   </fieldset>
+   <fieldset><legend>Event Details</legend>
+   <table><tr>{% if object.event_poster_image %}<td style="vertical-align:top;"><img src="{% url banian.views.image key=object.event_poster_image.key %}" alt="Event"></td>{% endif %}<td>
+   		<table>
+          <tr><td><strong>Event:</strong></td><td>{{ object.event_name }}{%if object.event_web_site%}<br><a href="{{ object.event_web_site }}">{{ object.event_web_site }}</a>{%endif%}</td></tr>
+{%if object.event_description%}          <tr><td><strong>Description:</strong></td><td>{{ object.event_description }}</td></tr>{%endif%}
+{%if object.limit_duration%}          <tr><td><strong>Duration:</strong></td><td>{{ object.event_duration  }} minutes</td></tr>{%endif%}
+          <tr><td><strong>Venue:</strong></td><td>{{object.venue_name}}{%if object.venue_web_site%}<br><a href="{{ object.venue_web_site }}">{{ object.venue_web_site }}</a>{%endif%}</td></tr>
+          <tr><td><strong>Address:</strong></td><td>{{object.venue_address}}</td></tr> 
+          <tr><td><strong>Representation:</strong></td><td>{{ object.representation_date|date:"M jS Y G:i"}} ({{object.venue_timezone}})</td></tr>
+{%if object.note%}          <tr><td><strong>Note:</strong></td><td>{{ object.event_note }}</td></tr>{%endif%}
+      </table>      
+  </td></tr></table>
+  </fieldset>
+<fieldset><legend>Tickets</legend>
+	<table id="id_ticket_list">
+    <thead>
+        <tr>
+            <th>Ticket ID</th><th>Status</th><th>Location</th><th>Seat</th><th>Class</th><th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in ticket_set %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td class="row"><a href="{%url banian.views.download_ticket key=ticket.key%}?transaction={{object.key}}">{{ticket.t_id }}</a></td>
+                <td class="row">{{ticket.status}}</td>
+                <td class="row">{{ticket.location_str}}</td>
+                <td class="row">{{ticket.number}}</td>
+                <td class="row">{{ticket.ticket_class_name}}</td>
+                <td class="row">{{ticket.price|floatformat:2}} $</td>
+            </tr>
+		{% empty %}
+		<tr><td colspan="2"><img src="{{ MEDIA_URL }}global/ajax-loader.gif" alt="Generating"><br><i>Generating tickets, please wait...</i></td></tr>
+        {% endfor %}
+    </tbody>     
+  </table>
+  
+</fieldset>
+ <a class="sexybutton" href="{% url banian.views.transactions %}"><span><span><span class="redo">Back</span></span></span></a>
+</fieldset> 
+{% endblock %}
+

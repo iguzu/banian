@@ -1,0 +1,10 @@
+{% extends 'contentbase.html' %}
+{% block title %}Confirm Venue Creation{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Create Venue</legend>
+<div class="notice">You have not yet created a venue, would you like to create one now?</strong></message></div>
+<p><br></p>
+<a href="{% url banian.venue.views.add_venue %}?redirect={{ redirect }}"><img src="{{ MEDIA_URL }}global/button_create.gif" alt="Create" ></a>
+<a href="{% url banian.views.events %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+</fieldset>
+{% endblock %}

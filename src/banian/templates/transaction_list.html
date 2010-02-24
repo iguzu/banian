@@ -1,0 +1,57 @@
+{% extends "contentbase.html" %}
+{% block title %}transaction List{% endblock %}
+{% block content-leftpane %}
+<h2>My Transactions</h2>
+    {% if is_paginated %}
+ <ul id="pagination-digg-top">
+ {% if has_previous %}
+ <li class="previous"><a href="?page={{ previous }}">&lt;&lt; Newer</a></li>
+ {% else %}
+ <li class="previous-off">&lt;&lt; Newer</li>
+ {% endif %}
+<li class="active">{{ page }} of {{ pages}}</li>
+{% if has_next %}
+ <li class="next"><a href="?page={{ next }}">Older &gt;&gt;</a></li>
+ {% else %}
+ <li class="next-off">Older &gt;&gt;</li>
+ {% endif %}
+ </ul><br>
+ {% endif %}
+	<table class="list">
+     <thead>
+	  <tr><th>Transaction</th><th>Date</th><th>Event</th><th>Tickets</th><th>Amount</th></tr>
+     </thead>
+     <tbody>
+	  {% for transaction in transaction_list %}
+       <tr class="{% cycle 'odd' 'even' %}">
+        <td class="row">{{transaction.type}}</td>
+        <td class="row"><a href="{% url banian.views.show_transaction key=transaction.key %}">{{transaction.date|date:"M jS Y G:i:s"}}</a></td>
+        <td class="row">{{transaction.event_name}} <br>{{transaction.venue_name}}, {{transaction.representation_date|date:"M jS Y G:i"}}</td>
+        <td class="row">{%ifequal transaction.status "Processing"%}{{transaction.status}}{%else%}{{transaction.nbr_tickets}}{%endifequal%}</td>
+        <td class="row">{{transaction.total_amount|floatformat:2}} $</td>
+	   </tr>
+	  {% empty %}
+       <tr><td colspan="5"><i>No transactions on records</i></td></tr> 
+      {% endfor %}
+     </tbody>
+    </table>
+ 
+ {% if is_paginated %}
+ <ul id="pagination-digg-bottom">
+ {% if has_previous %}
+ <li class="previous"><a href="?page={{ previous }}">&lt;&lt; Newer</a></li>
+ {% else %}
+ <li class="previous-off">&lt;&lt; Newer</li>
+ {% endif %}
+<li class="active">{{ page }} of {{ pages}}</li>
+{% if has_next %}
+ <li class="next"><a href="?page={{ next }}">Older &gt;&gt;</a></li>
+ {% else %}
+ <li class="next-off">Older &gt;&gt;</li>
+ {% endif %}
+ </ul>
+ {% endif %}
+ 
+
+ <p></p>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'contentbase.html' %}
+{% block title %}Confirm Event Publication{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Publish Event</legend>
+<div class="notice">Do you really want to publish the event <strong> {{ event.name }}</strong> ?</message></div>
+<p><br></p>
+<form action="" method="post">
+<input type="image" src="{{ MEDIA_URL }}global/button_confirm.gif" alt="Confirm" name="create" value="create">
+<a href="{% url banian.views.show_event key=event.key %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+</form>
+</fieldset>
+{% endblock %}

@@ -1,0 +1,158 @@
+/* Use this to create a horizontal ruler across a column. */
+hr {
+  background: #0089AD; 
+  color: #0089AD;
+  clear: both; 
+  float: none; 
+  width: 100%; 
+  height: .2em;
+  margin: 0 0 1.45em;
+  border: none; 
+}
+hr.space {
+  background: #fff;
+  color: #fff;
+}
+
+textarea      { width: 390px; height: 100px; padding:5px; }
+
+table.list { margin-top: 0.5em;margin-bottom: 0.5em; border:thin solid #7EC1D7 ;}
+thead th { border-bottom:thick ridge #eeeeee; background:#ADD8E6 }
+tfoot td { border-top:medium solid #0089AD;} 
+td.row  { border-bottom:thin solid #dddddd;} 
+tr.even td  { background: #eeeeee; }
+table.pageheader { margin: 0.5em; margin-top:0em;}
+table.pageheader tr td { vertical-align:bottom; color: #0089AD; }
+table.pageheader tr td.topmenu {text-align: right; vertical-align:bottom; color: #0089AD; }
+
+table.pageheader tr td a {color: #0089AD ;}
+table.submenu { margin-bottom: 0.5em; }
+table.submenu tr td.submenu {text-align: right; vertical-align:bottom; color: #0089AD; }
+table.submenu tr td a {color: #0089AD ;}
+div[id=topmenu] {vertical-align:bottom;}
+fieldset legend.title { font-size: 1.5em;}
+hr.footer { margin-bottom:0px;}
+hr.header { margin-bottom:0px;}
+div[id=content] {margin-top:1em; margin-bottom:1em; }
+div[id=header] {vertical-align:bottom; }
+div.border { border-right: 1px solid #eee; }
+div[id=bottommenu] { color: #0089AD ;}
+div[id=bottommenu] a { color: #0089AD ; }
+
+
+
+ul{border:0; margin:0; padding:0;}
+
+#pagination-digg-top li{
+border:0; margin:0; padding:0;
+font-size:11px;
+list-style:none;
+margin-right:2px;
+}
+#pagination-digg-top a{
+border:solid 1px #9aafe5;
+margin-right:2px;
+}
+#pagination-digg-top .previous-off,
+#pagination-digg-top .next-off {
+border:solid 1px #DEDEDE;
+color:#0e509e;
+display:block;
+float:left;
+margin-right:2px;
+padding:3px 4px;
+}
+#pagination-digg-top .next a,
+#pagination-digg-top .previous a {
+font-weight:bold;
+} 
+#pagination-digg-top .active{
+color:#0e509e;
+font-weight:bold;
+display:block;
+float:left;
+padding:3px 6px;
+}
+#pagination-digg-top a:link,
+#pagination-digg-top a:visited {
+color:#0e509e;
+display:block;
+float:left;
+padding:3px 6px;
+text-decoration:none;
+}
+#pagination-digg-top a:hover{
+}
+
+#pagination-digg-bottom li{
+border:0; margin:0; padding:0;
+font-size:11px;
+list-style:none;
+margin-right:2px;
+}
+#pagination-digg-bottom a{
+border:solid 1px #9aafe5;
+margin-right:2px;
+}
+#pagination-digg-bottom .previous-off,
+#pagination-digg-bottom .next-off {
+border:solid 1px #DEDEDE;
+color:#0e509e;
+display:block;
+float:left;
+margin-right:2px;
+padding:3px 4px;
+}
+#pagination-digg-bottom .next a,
+#pagination-digg-bottom .previous a {
+font-weight:bold;
+} 
+#pagination-digg-bottom .active{
+color:#0e509e;
+font-weight:bold;
+display:block;
+float:left;
+padding:3px 6px;
+}
+#pagination-digg-bottom a:link,
+#pagination-digg-bottom a:visited {
+color:#0e509e;
+display:block;
+float:left;
+padding:3px 6px;
+text-decoration:none;
+}
+#pagination-digg-bottom a:hover{
+}
+
+
+
+
+.ui-timepicker {
+    font-size:1em;
+    padding:2px 6px 2px 6px;
+    margin-left:2px;
+    text-align:center;
+    cursor:pointer;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    text-align:center;
+    width:4em;
+    background-color:#ffffff;
+     }
+     
+.ui-datepicker {
+    font-size:1em;
+    padding:2px 6px 2px 6px;
+    margin-left:2px;
+    text-align:center;
+    cursor:pointer;
+    -moz-border-radius:3px;
+    -webkit-border-radius:3px;
+    text-align:center;
+}
+
+
+.ui-slider {     
+border:0; width:2.5em;
+}

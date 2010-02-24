@@ -1,0 +1,9 @@
+{% extends 'contentbase.html' %}
+{% block title %}Select Seat Configuration{% endblock %}
+{% block content-leftpane %}
+<fieldset><legend class="title">Select Seat Configuration</legend>
+<form action="" method="POST">
+<table><tr><td valign="bottom">{{ form.seat_config }}<input type="image" src="{{ MEDIA_URL }}global/button_select.gif" alt="Select" ></td></tr></table>
+</form>
+</fieldset>
+{% endblock %}

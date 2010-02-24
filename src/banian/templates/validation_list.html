@@ -1,0 +1,23 @@
+{% extends "contentbase.html" %}
+{% block title %}Event List{% endblock %}
+{% block content-leftpane %}
+    <h2>Events</h2>
+    <p class="span-12"></p>
+    <table class="list">
+        <thead>
+            <tr><th></th><th>Date</th><th>Event</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for event in event_list %}
+                <tr class="{% cycle 'odd' 'even' %}">
+                    <td class="row"><a href="{% url banian.views.validate key=event.first_representation.key %}">{% if event.thumbnail_image %}<img src="{% url banian.views.image key=event.thumbnail_image.key %}?medium=" alt="{{event.name}}" >{%else%}<img src="{{ MEDIA_URL }}global/BlueMonster100px.jpg"alt="{{event.name}}">{%endif%}</a></td>
+                    <td class="row">{{ event.first_representation.date|date:"l, F jS Y P" }}</td>
+                    <td class="row"><a href="{% url banian.views.validate key=event.first_representation.key %}">{{event.name }}</a></td>
+                    <td class="row">{{ event.first_representation.status }}</td>                    
+                </tr>
+             {% empty %}
+            <tr><td colspan="4"><i>No Events. Please note that events will appear only 48h before they start</i></td></tr> 
+            {% endfor %}
+    </tbody>
+    </table>
+{% endblock %}

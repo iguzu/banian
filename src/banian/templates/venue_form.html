@@ -1,0 +1,43 @@
+{% extends "contentbase.html" %}
+{% block title %}{%if object %}Edit{% else %}Add{% endif %} venue{% endblock %}
+{% block extra-head %}
+<script type="text/javascript">
+<!--
+	$(document).ready(function() {
+		$("#id_country").change( function() {
+			$("#id_timezone").empty();
+			$.getJSON("{% url banian.views.timezonelist %}?cctld=" + $("#id_country").val() ,
+			        function(data){
+			        	for (var i=0;i<data.choices.length;i++) {
+			        		$("#id_timezone").append('<option value="' + data.choices[i][0] + '">' + data.choices[i][1] + '<\/option>')
+			        	}
+			        	
+		    });
+		});
+	});
+//-->	
+ </script>
+{% endblock %}
+
+{% block content-leftpane %}
+{% if form.errors %}<div class="error">{{ form.errors }}</div>{% endif %}  
+<form action="" method="post" enctype="multipart/form-data">    
+    <fieldset><legend>Venue Details</legend>
+        <table>
+         <tr><td><label for="id_name">{{form.name.label}}:</label></td><td>{{form.name}}</td></tr>
+         <tr><td><label for="id_description">{{form.description.label}}:</label></td><td>{{form.description}}</td></tr>
+         <tr><td><label for="id_web_site">{{form.web_site.label}}:</label></td><td>{{form.web_site}}</td></tr>         
+         <tr><td><label for="id_address">{{form.address.label}}:</label></td><td>{{form.address}}</td></tr>
+         <tr><td><label for="id_timezone">Timezone:</label></td><td>{{ form.timezone }}</td><td ></td></tr>
+         <tr><td><label for="id_thumbnail">{{form.thumbnail.label}}:</label><br>{% if object.thumbnail_image %}{{ object.thumbnail_image}}<br> <img src="{% url banian.views.image key=object.thumbnail_image.key %}?venue={{object.key}}&amp;small=True" alt="{{object.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.thumbnail}}<br>{{form.thumbnail.help_text}}</td></tr>
+         <tr><td><label for="id_poster">{{form.poster.label}}:</label><br>{% if object.poster_image %}{{object.poster_image}}<br><img src="{% url banian.views.image key=object.poster_image.key%}?venue={{object.key}}&amp;small=True" alt="{{object.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.poster}}<br>{{form.poster.help_text}}</td></tr>
+        </table>
+   <input type="image" {% if object %}src="{{ MEDIA_URL }}global/button_save.gif" alt="Save"{% else %}src="{{ MEDIA_URL }}global/button_create.gif" alt="Create"{% endif %}>
+   {% if object %}
+   <a href="{% url banian.venue.views.show_venue key=object.key %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+   {% else %}
+    <a href="{% url banian.venue.views.venues %}"><img src="{{ MEDIA_URL }}global/button_cancel.gif" alt="Cancel" ></a>
+   {% endif %}
+    </fieldset>
+</form>
+{% endblock %}

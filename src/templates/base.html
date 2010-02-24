@@ -1,0 +1,134 @@
+{% block doc-declaration %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+{% endblock %}
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <title>iguzu.com | {% block title %}{% endblock %}</title>
+     <link rel="shortcut icon" href="{{ MEDIA_URL }}global/favicon.ico">
+    {% block css %}
+      <link rel="stylesheet" type="text/css"  media="screen, projection" href="{{ MEDIA_URL }}combined-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css">
+      <link rel="stylesheet" type="text/css"  media="print" href="{{ MEDIA_URL }}combined-print-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css">
+      <!--[if IE]>
+        <link rel="stylesheet" type="text/css" media="screen, projection" href="{{ MEDIA_URL }}ie.css">
+      <![endif]-->
+    {% endblock %}
+
+    {% block js %}
+      <script type="text/javascript" src="{{ MEDIA_URL }}combined-{{ LANGUAGE_CODE }}.js"></script>
+    {% endblock %}
+<script type="text/javascript">
+<!--
+{%if not nologin %}
+ 	$(document).ready( function() {
+		$("#id_username").focus(function(event) {
+			if($(this).val() == 'Username') {
+				$(this).val('')
+			}
+		});				
+		if($("#id_username").val() == '') {
+			$("#id_username").val('Username')
+		}
+		if($("#id_password").val() == '') {
+			$("#id_password").hide()
+			$("#id_password-text").val('Password')
+			$("#id_password-text").show()
+		}
+		
+		$("#id_password-text").focus(function(event) {
+				$("#id_password-text").hide()
+				$("#id_password").show()
+				document.getElementById('id_password').focus();
+				event.preventDefault();
+		});
+	});
+{%endif%}
+//-->
+ </script>
+
+    {% block extra-head %}{% endblock %}
+  </head>
+ {% block body-tag %}<body >{% endblock %}
+    {% block header %}
+    <div class="container">
+      <div id="header">
+        <table class="pageheader"><tr><td>
+                <img src="{{ MEDIA_URL }}global/geckoIII.gif" alt="Iguzu" ><i>Ticketing for the rest of us</i>
+            </td>
+            <td class="topmenu">
+            {%if not nologin %}
+            {% if user.is_authenticated %}
+             <div>Welcome, {{ user.username }}!</div>
+            {%else%}
+             <form action="{% url registration.views.login%}" method="POST"><div style="margin-bottom:1em;"><input id="id_username" style="vertical-align:middle;" type="text" name="username" maxlength="75" ><input style="vertical-align:middle;margin-left:5px;" type="password" name="password" id="id_password" ><input style="vertical-align:middle;margin-left:5px;display:none" type="text" name="password-text" id="id_password-text" ><button class="sexybutton" type="submit" style="vertical-align:middle;"><span><span><span class="ok">Login</span></span></span></button><br><a href="/account/password/reset/">Forgot your password?</a></div></form>
+            {%endif%}{%endif%}
+{% for item in menu %}
+{% if forloop.counter0 %} | {%endif%}
+{%ifequal forloop.counter0 current_menu %}<strong>{%endifequal%}
+{%if item.url%}<a href="{{item.url}}">{{item.name}}</a>{%else%}{{item.name}}{%endif%}
+{%ifequal forloop.counter0 current_menu %}</strong>{%endifequal%}
+{%endfor%}
+            </td>
+        </tr></table>
+      <hr class="header">
+      </div>
+    {% endblock %}
+{% block sub-menu %}
+ <div  style="text-align:right">
+  <table class="submenu">
+   <tr><td class="submenu">
+    {% for item in sub_menu %}
+    {% if forloop.counter0 %} | {%endif%}
+    {%ifequal forloop.counter0 current_sub_menu %}<strong>{%endifequal%}
+    {%if item.url%}<a href="{{item.url}}">{{item.name}}</a>{%else%}{{item.name}}{%endif%}
+    {%ifequal forloop.counter0 current_sub_menu %}</strong>{%endifequal%}
+    {%endfor%}
+   </td></tr>
+  </table>
+ </div>
+{% endblock %}
+    <div id="content" class="column container">
+      {% block content-header %}
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        {% if info %}<div class="info">{{ info }}</div>{% endif %}
+        {% if messages %}
+          {% for message in messages %}
+            <div class="notice">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endblock %}
+      {% block content %}{% endblock %} 
+    </div>
+      
+    <div id="footer">
+        <hr class="footer" >
+        <table><tr><td colspan="2">
+            <div style="text-align:center" id="bottommenu">
+                <a class="menu" href="{% url help.views.list_entries %}">Help</a> | 
+                <a class="menu" href="{% url help.views.list_entries %}">About Us</a> | 
+                <a class="menu" href="{% url help.views.list_entries %}">Privacy Policy</a> | 
+                <a class="menu" href="{% url help.views.list_entries %}">Contact us</a>
+            </div></td></tr>
+     <tr><td>
+      <a href="http://code.google.com/p/app-engine-patch/"><img src="{{ MEDIA_URL }}global/powered-by-app-engine-patch.png" alt="powered by app-engine-patch"></a><img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif" alt="Powered by Google App Engine"><a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-html401-blue"
+        alt="Valid HTML 4.01 Strict" height="31" width="88"></a>
+    </td><td><div style="text-align:right" class="menu">Copyright 2009 iguzu.com. All rights reserved</div></td></tr></table>
+  </div>
+  </div>
+ <script type="text/javascript">
+ <!--
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+//-->
+</script>
+<script type="text/javascript">
+<!--
+try {
+var pageTracker = _gat._getTracker("UA-10721535-1");
+pageTracker._trackPageview();
+} catch(err) {}
+//-->
+</script>
+  </body>
+</html>
