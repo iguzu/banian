@@ -29,7 +29,6 @@ from datetime import datetime, timedelta
 def generate_tickets(request):
     reservation = request.POST['reservation']
     transaction = Transaction.get(request.POST['transaction'])
-    logging.info(repr(transaction))
     owner = User.get(request.POST['owner']) #@UndefinedVariable
     tickets = []
     seats = Seat.all().filter('reservation =', reservation).fetch(fetch_limit)
@@ -295,7 +294,7 @@ def generate_seats(request):
         slice = slice + put_limit
     if done:
         paymentStatus = None
-        if representation.total_cost() == 0:
+        if representation.publishing_cost() == 0:
             paymentStatus = 'Completed'
         else:
             memo = "Payment of %.2f for publishing %d tickets (at 0.01$/ticket) for %s" % (representation.publishing_cost(),representation.event.nbr_assigned_seats(),representation.event.name + ', ' + str(representation.date))
@@ -356,6 +355,9 @@ def clean_reservation(request):
         if not memcache.get(str(representation.key()) + '-ticket_timestamp'): #@UndefinedVariable
             taskqueue.add(url='/tasks/update_available_tickets/', params={'representation':representation.key(), }, countdown=10)
         memcache.set(str(representation.key()) + '-ticket_timestamp', datetime.utcnow().replace(tzinfo=gaepytz.utc)) #@UndefinedVariable
+        transaction = Transaction.all().filter('reservation =',reservation).get()
+        if transaction and transaction.status == 'Processing Payment':
+            transaction.delete()
     logging.info('Task clean_reservation - Done') 
     return HttpResponse()
 
@@ -368,22 +370,29 @@ def update_available_tickets(request):
     if representation:
         timestamp = memcache.get(str(representation.key()) + '-ticket_timestamp') #@UndefinedVariable
         representation.calc_available_tickets(timestamp)
-        memcache.delete(str(representation.key()) + '-ticket_timestamp') #@UndefinedVariable
         if representation.available_tickets == 0:
             representation.status = 'Sold Out'
         else:
             if representation.status == 'Sold Out':
                 representation.status = 'On Sale'
-        representation.put()
+        memcache.delete(str(representation.key()) + '-ticket_timestamp') #@UndefinedVariable
+        try:
+            representation.put()
+        except:
+            memcache.set(str(representation.key()) + '-ticket_timestamp',timestamp) #@UndefinedVariable
     return HttpResponse()
 
 def update_representation_revenues(request):
     representation = Representation.get(request.POST['representation'])
     if representation:
         timestamp = memcache.get(str(representation.key()) + '-ticket_sold_timestamp') #@UndefinedVariable
-        memcache.delete(str(representation.key()) + '-ticket_sold_timestamp') #@UndefinedVariable
         representation.calc_revenues(timestamp)
-        representation.put()
+        memcache.delete(str(representation.key()) + '-ticket_sold_timestamp') #@UndefinedVariable
+        try:            
+            representation.put()
+        except:
+            memcache.set(str(representation.key()) + '-ticket_sold_timestamp',timestamp) #@UndefinedVariable
+            raise
     return HttpResponse()
 
 

@@ -7,8 +7,9 @@ from ragendja.template import render_to_response
 from django.forms.fields import Field
 from django.forms.widgets import Textarea
 from google.appengine.api.labs import taskqueue
-from banian.paypal import processPayment, processPaymentEx
+from banian.paypal import processPaymentEx
 from django.forms.forms import ValidationError
+import urllib
 
 import math
 import logging #@UnusedImport
@@ -39,6 +40,8 @@ def auto_loader():
     
 
 def transfer_to_paypal(request,url):
+    logging.debug(repr(url))
+    url = urllib.quote(url)
     return render_to_response(request, "banian/transfering.html", {'redirect':url,})
 
 def create_object(request, model=None, template_name=None,
@@ -318,20 +321,15 @@ def location_window(latitude, longitude, radius, units):
     return lng_min, lat_min, lng_max, lat_max 
 
 
-def payment(request, representation, data):
+def preparePayment(request, representation, data):
     memo = "Tickets for %s on %s at %s:\n"
     total = 0
-    for key,value in data.itertiems():
+    for key,value in data.iteritems():
         ticket_class = TicketClass.get(key)
         memo = memo + " - %d tickets at %.2f\n" % (value,ticket_class.price)
         total = total + ticket_class.price * value
     memo = memo + " - For a total of %.2f\n" % total
-    paymentStatus, paykey = processPaymentEx(request,memo, total, representation.owner.paypal_id)
-    if paymentStatus == "Created": 
-        return transfer_to_paypal(request, "https://www.paypal.com/webscr?cmd=_ap-payment&paykey=%s" % paykey)
-    else:
-        raise ValidationError("An error has occurred")
-        #TODO: put some messages 
+    return processPaymentEx(request=request,memo=memo, amount=total, apkey=None,receiver=representation.owner.paypal_id)
 
 def take_seats(representation, reservation, data):
     seats = Seat.all().filter('reservation =', reservation).ancestor(representation).fetch(fetch_limit)

@@ -2278,7 +2278,7 @@ class ValidationTestCase(TestCase):
         e = publishEvent(self, e)
         r = self.client.get(reverse('banian.views.validate',kwargs={'key':e.first_representation().key()}) + '?seat_number=1',follow=True,HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         data = loads(r.content)        
-        s = models.Seat.all().filter('representation =',e.first_representation()).filter('number =',1).get()
+        models.Seat.all().filter('representation =',e.first_representation()).filter('number =',1).get()
         self.assertEqual(data['t_id'],'')
         self.assertEqual(data['message_html'],'No ticket sold for this seat')
         self.assertEqual(data['error'],True)
@@ -2362,10 +2362,13 @@ class ValidationTestCase(TestCase):
         
 
 class PaypalTestCase(TestCase):
-    pastResponse            = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-01-28T01:47:34.703-08:00', u'build': u'1159023', u'correlationId': u'a9b9fb0f44ce4'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'severity': u'Error', u'message': u'The start date must be in the future', u'parameter': [u'startingDate'], u'errorId': u'580024'}]}
-    getDetailsInvalidKey    = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-02-09T09:33:36.0-08:00', u'build': u'1159023', u'correlationId': u'6269520fb9bfb'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'message': u'The preapproval key AAA is invalid', u'severity': u'Error', u'errorId': u'589019'}]} 
-    invalidPaypalID         = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-02-19T13:49:54.233-08:00', u'build': u'1193935', u'correlationId': u'96be9bf855846'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'message': u'Invalid request: Not a valid email address.', u'severity': u'Error', u'errorId': u'580001'}]}
-    invalidPreApprovalKey   = {u'curPayments': u'0', u'responseEnvelope': {u'ack': u'Success', u'timestamp': u'2010-02-19T14:23:27.94-08:00', u'build': u'1193935', u'correlationId': u'94fa2f4d41242'}, u'returnUrl': u'http://www.iguzu.com/events/representations/publish/ag5iYW5pYW4tcHJvamVjdHIcCxIVYmFuaWFuX3JlcHJlc2VudGF0aW9uGPokDA?status=completed', u'memo': u'Payment pre-approval to publish Test, 2010-02-27 20:00:00-05:00\n Total 4.00 $:\n  - 0.00  for publishing 0 tickets (at 0.01$/ticket).\n  -Up to 4.00 $ in comission if the representation solds out (1% of 399.80 $).', u'currencyCode': u'USD', u'maxTotalAmountOfAllPayments': u'4.00', u'dayOfWeek': u'NO_DAY_SPECIFIED', u'senderEmail': u'buyer_1259639092_per@iguzu.com', u'endingDate': u'2010-03-01T13:55:05.0-08:00', u'status': u'ACTIVE', u'curPeriodAttempts': u'0', u'paymentPeriod': u'NO_PERIOD_SPECIFIED', u'cancelUrl': u'http://www.iguzu.com/events/representations/publish/ag5iYW5pYW4tcHJvamVjdHIcCxIVYmFuaWFuX3JlcHJlc2VudGF0aW9uGPokDA?status=cancelled', u'startingDate': u'2010-02-19T13:55:05.0-08:00', u'pinType': u'NOT_REQUIRED', u'dateOfMonth': u'0', u'approved': u'false', u'curPaymentsAmount': u'0.00'}
+    PreApproval_pastResponse        = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-01-28T01:47:34.703-08:00', u'build': u'1159023', u'correlationId': u'a9b9fb0f44ce4'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'severity': u'Error', u'message': u'The start date must be in the future', u'parameter': [u'startingDate'], u'errorId': u'580024'}]}
+    getPADetailsInvalidKey          = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-02-09T09:33:36.0-08:00', u'build': u'1159023', u'correlationId': u'6269520fb9bfb'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'message': u'The preapproval key AAA is invalid', u'severity': u'Error', u'errorId': u'589019'}]} 
+    invalidPaypalID                 = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-02-19T13:49:54.233-08:00', u'build': u'1193935', u'correlationId': u'96be9bf855846'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'message': u'Invalid request: Not a valid email address.', u'severity': u'Error', u'errorId': u'580001'}]}
+    invalidPreApprovalKey           = {u'curPayments': u'0', u'responseEnvelope': {u'ack': u'Success', u'timestamp': u'2010-02-19T14:23:27.94-08:00', u'build': u'1193935', u'correlationId': u'94fa2f4d41242'}, u'returnUrl': u'http://www.iguzu.com/events/representations/publish/ag5iYW5pYW4tcHJvamVjdHIcCxIVYmFuaWFuX3JlcHJlc2VudGF0aW9uGPokDA?status=completed', u'memo': u'Payment pre-approval to publish Test, 2010-02-27 20:00:00-05:00\n Total 4.00 $:\n  - 0.00  for publishing 0 tickets (at 0.01$/ticket).\n  -Up to 4.00 $ in comission if the representation solds out (1% of 399.80 $).', u'currencyCode': u'USD', u'maxTotalAmountOfAllPayments': u'4.00', u'dayOfWeek': u'NO_DAY_SPECIFIED', u'senderEmail': u'buyer_1259639092_per@iguzu.com', u'endingDate': u'2010-03-01T13:55:05.0-08:00', u'status': u'ACTIVE', u'curPeriodAttempts': u'0', u'paymentPeriod': u'NO_PERIOD_SPECIFIED', u'cancelUrl': u'http://www.iguzu.com/events/representations/publish/ag5iYW5pYW4tcHJvamVjdHIcCxIVYmFuaWFuX3JlcHJlc2VudGF0aW9uGPokDA?status=cancelled', u'startingDate': u'2010-02-19T13:55:05.0-08:00', u'pinType': u'NOT_REQUIRED', u'dateOfMonth': u'0', u'approved': u'false', u'curPaymentsAmount': u'0.00'}
+    PayAmountLessThanZeo            = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-02-20T21:47:56.04-08:00', u'build': u'1193935', u'correlationId': u'14729ed015ed2'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'message': u'Invalid request: amount cannot be negative or zero', u'severity': u'Error', u'errorId': u'580001'}]}
+    Pay_invalidPreApprovalKey       = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-02-20T22:21:02.331-08:00', u'build': u'1193935', u'correlationId': u'14f0adaefadd9'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'message': u'The preapproval key seller_1259638970_biz@iguzu.com is invalid', u'severity': u'Error', u'errorId': u'589019'}]}
+    Pay_SenderReceiverMustBeDiff    = {u'responseEnvelope': {u'ack': u'Failure', u'timestamp': u'2010-02-20T22:29:24.198-08:00', u'build': u'1193935', u'correlationId': u'ab4bc965755f8'}, u'error': [{u'category': u'Application', u'domain': u'PLATFORM', u'message': u'The sender and each receiver must have different accounts', u'severity': u'Error', u'errorId': u'579033'}]}
     def setUp(self):
         pass
 
@@ -2586,3 +2589,22 @@ class CloseRepresentationTestCase(TestCase):
         rep = models.Representation.get(e.first_representation().key())
         self.assertEqual(rep.status,'Sold Out')
         StubPaypal()
+        
+class RegisterLoginTestCase(TestCase):
+
+    def setUp(self):
+        pass
+    def testRegister(self):
+        pass
+
+    def testRegisterDifferentPassword(self):
+        pass
+
+    def testRegisterBadCaptcha(self):
+        pass
+
+    def testLogin1User(self):
+        pass
+
+    def testLogin10User(self):
+        pass

@@ -318,14 +318,16 @@ def processPaymentEx(request,memo,amount, apkey,receiver='broker_1259639312_biz@
                    'requestEnvelope':{'errorLanguage':'en_US',},
                    'currencyCode':'USD',
                    'receiverList':{'receiver':[{'email':receiver,'amount':"%.2f" % amount,}]},
-                   'clientDetails':{'ipAddress':'','applicationId':"Iguzu brokerage platform",
+                   'clientDetails':{'ipAddress':request.META.get('REMOTE_ADDR',''),'applicationId':"Iguzu brokerage platform",
                                     'customerId':request.user.username,'partnerName':receiverName},
                    'cancelUrl':"http://www.iguzu.com/",
-                   'preapprovalKey':apkey,
                    'senderEmail':request.user.paypal_id,
                    'actionType':'PAY',
                    'memo':memo
                    }
+        if apkey:
+            payload['preapprovalKey'] = apkey
+
         #TODO: add IP adress from META
         http_response = urlfetch.Fetch(url=url,headers=headers,method=urlfetch.POST,payload=simplejson.dumps(payload))
         if http_response.status_code != 200:

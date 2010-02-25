@@ -444,7 +444,7 @@ class Transaction(db.Model):
     representation = db.ReferenceProperty(Representation)
     date = db.DateTimeProperty(auto_now_add=True)
     type = db.StringProperty(choices=set(['Purchase', 'Refund', 'Cancellation', 'Transfer In', 'Transfer To']))
-    status = db.StringProperty(choices=set(['Processing', 'Completed', 'Cancelled','Refunded']))
+    status = db.StringProperty(choices=set(['Processing Payment','Processing','Generating Tickets', 'Completed', 'Cancelled','Refunded']))
     t_id = db.StringProperty(required=True)
     owner = db.ReferenceProperty(User, required=True)
     representation_date = db.DateTimeProperty()
@@ -464,6 +464,8 @@ class Transaction(db.Model):
     ticket_keys = db.ListProperty(db.Key,indexed=False)
     apkey = db.StringProperty(indexed=False)
     paypal_id = db.StringProperty(indexed=False)
+    reservation = db.StringProperty()
+    paykey = db.StringProperty(indexed=False)
     
 
     last_modified = db.DateTimeProperty(auto_now=True,indexed=False)
