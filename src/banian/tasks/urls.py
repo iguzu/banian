@@ -21,4 +21,5 @@ urlpatterns = patterns('banian.tasks.views', #@UndefinedVariable
  (r'^schedule_close_representations/$', 'schedule_close_representations'),
  (r'^schedule_put_on_sales/$', 'schedule_put_on_sales'),
  (r'^auto_load/$', 'auto_load'), 
+ (r'^reverse_transaction/$', 'reverse_transaction'), 
 )

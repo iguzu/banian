@@ -82,7 +82,7 @@
    
    <fieldset><legend>Event Details</legend>
          <table>
-          <tr><td><strong>Status:</strong></td><td>{{ object.first_representation.status }}</td></tr>
+          <tr><td><strong>Status:</strong></td><td id="status">{{ object.first_representation.status }}</td></tr>
           <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>          
           <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
           <tr><td><strong>Date:</strong></td><td>{{ object.first_representation.date|date:"l, F jS Y \a\t P" }}</td></tr>
