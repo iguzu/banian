@@ -335,7 +335,7 @@ def preparePayment(request, representation, data,transaction):
                             amount=total,
                             apkey=None,
                             receiver=representation.owner.paypal_id,
-                            returnURL='http://www.iguzu.com' + reverse('banian.views.show_transaction',kwargs={'key':transaction.key()}) + '?status=completed',
+                            returnURL='http://www.iguzu.com' + reverse('banian.views.show_transaction',kwargs={'key':transaction.key()}) + '?status=completed&new=True',
                             cancelURL='http://www.iguzu.com' + reverse('banian.views.show_transaction',kwargs={'key':transaction.key()}) +'?status=cancelled')
 
 def take_seats(representation, reservation):
