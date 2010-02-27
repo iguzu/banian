@@ -80,6 +80,7 @@
     <tr><td></td></tr>
     {% endfor %}
 </table>
+<p><label>Total Purchase Amount:</label><span id="id_total_purchase_amount">0.00</span>$</p>
 {%if already_purchase_tickets %}
 <p>You already purchased {{already_purchase_tickets}} tickets for this representation, {%if max_tickets%}you are limited to purchase {{max_tickets}} tickets{%else%}you are not allowed to purchase any other tickets{%endif%}</p>
 {%else%}

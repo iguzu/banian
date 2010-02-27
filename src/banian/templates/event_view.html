@@ -5,10 +5,10 @@
   <fieldset><legend class="title">{{ object.name }}</legend>
    <div style="width:100%;text-align:right"></div>
    <table><tr>{% if object.poster_image %}<td><img src="{% url banian.views.image key=object.poster_image.key %}" alt="{{objec.name}}"></td>{% endif %}<td>
-   
    <fieldset><legend>Event Details</legend>
          <table>
           <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>
+          <tr><td><strong>Price:</strong></td><td>{{ object.first_ticket_class.price}}</td></tr>
           <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
           <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
 {%if object.description%}<tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>{%endif%}
@@ -24,6 +24,8 @@
 {%endif%}
 {%if object.note%}<tr><td><strong>Note:</strong></td><td>{{ object.note  }}</td></tr>{%endif%}
       </table>      
+This event is organized by <strong>{{object.owner.name }} ({{object.owner.username}})</strong>
+
   </fieldset>
   </td></tr></table>
 <fieldset><legend>Dates/Representations</legend>

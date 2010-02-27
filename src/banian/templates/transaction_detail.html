@@ -35,6 +35,7 @@
    <fieldset><legend>Transaction Details</legend>
          <table>
           <tr><td><strong>Transaction ID:</strong></td><td>{{ object.t_id }}</td></tr>
+          <tr><td><strong>Transaction Status:</strong></td><td>{{ object.status }}</td></tr>
           <tr><td><strong>Date of {{object.type}}:</strong></td><td>{{ object.date|date:"M jS Y G:i:s" }}</td></tr>
           <tr><td><strong>Type:</strong></td><td>{{ object.type }}</td></tr>
           <tr><td><strong>Ticket Purchased:</strong></td><td>{{ object.nbr_tickets }}</td></tr>

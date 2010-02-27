@@ -364,7 +364,7 @@ class SelectTicketForm(Form):
         self.sliders = []
         id = 1
         for ticket_class in self._ticketclass_list:
-            self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (%s $)' % ticket_class.price,initial=0,help_text=ticket_class.total_available_text)
+            self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (%.2f $)' % ticket_class.price,initial=0,help_text=ticket_class.total_available_text)
             self.fields['tc' + str(id)].widget.attrs['class'] = 'ui-slider'
             self.sliders.append(Slider('id_tc' + str(id),ticket_class.max_tickets))
             id += 1

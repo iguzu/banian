@@ -291,6 +291,11 @@ class Event(GeoModel):
         self._ticket_classes = self.ticketclass_set.order('name').fetch(fetch_limit)
         return self._ticket_classes
 
+    def first_ticket_class(self):
+        ticket_classes = self.ticket_classes()
+        if len(ticket_classes):
+            return ticket_classes[0]
+        return None
 
     def available_tickets(self):
         if not hasattr(self,'_available_tickets'):            
