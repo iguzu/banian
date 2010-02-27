@@ -381,13 +381,13 @@ class Representation(GeoModel):
         super(Representation,self).put(*args,**kwargs)
 
     def calc_available_tickets(self,timestamp):
-        if timestamp > self.timestamp_available:
+        if not timestamp or not self.timestamp_available or  timestamp > self.timestamp_available:
             self.available_tickets, ticket_class_available = banian.model_utils.calc_representation_available(self)
             self.set_ticketclass_available(ticket_class_available)
             self.timestamp_available = timestamp
 
     def calc_revenues(self,timestamp):
-        if timestamp > self.timestamp_revenues:
+        if not timestamp or not self.timestamp_revenues or timestamp > self.timestamp_revenues:
             self.revenues = banian.model_utils.calc_representation_revenues(self)
             self.timestamp_revenues = timestamp
 
@@ -444,7 +444,7 @@ class Transaction(db.Model):
     representation = db.ReferenceProperty(Representation)
     date = db.DateTimeProperty(auto_now_add=True)
     type = db.StringProperty(choices=set(['Purchase', 'Refund', 'Cancellation', 'Transfer In', 'Transfer To']))
-    status = db.StringProperty(choices=set(['Processing', 'Completed', 'Cancelled','Refunded']))
+    status = db.StringProperty(choices=set(['Processing Payment','Processing','Generating Tickets', 'Completed', 'Cancelled','Refunded']))
     t_id = db.StringProperty(required=True)
     owner = db.ReferenceProperty(User, required=True)
     representation_date = db.DateTimeProperty()
@@ -464,7 +464,9 @@ class Transaction(db.Model):
     ticket_keys = db.ListProperty(db.Key,indexed=False)
     apkey = db.StringProperty(indexed=False)
     paypal_id = db.StringProperty(indexed=False)
-    
+    reservation = db.StringProperty()
+    payment_key = db.StringProperty(indexed=False)
+    payment_status = db.StringProperty(indexed=False,choices=set(['Processing','Completed','Canceled']))
 
     last_modified = db.DateTimeProperty(auto_now=True,indexed=False)
     created = db.DateTimeProperty(auto_now_add=True,indexed=False)

@@ -28,8 +28,8 @@ from datetime import datetime, timedelta
 
 def generate_tickets(request):
     reservation = request.POST['reservation']
-    transaction = Transaction.get(request.POST['transaction'])
-    logging.info(repr(transaction))
+    key = request.POST['transaction']
+    transaction = Transaction.get(key)
     owner = User.get(request.POST['owner']) #@UndefinedVariable
     tickets = []
     seats = Seat.all().filter('reservation =', reservation).fetch(fetch_limit)
@@ -157,7 +157,6 @@ def refund_tickets(request):
     if query.count(put_limit) < put_limit:
         done = True
     transactions = query.fetch(put_limit)
-    logging.debug(repr(transactions))
     for transaction in transactions:
         status = banian.paypal.processRefund(memo,transaction.paypal_id,transaction.total_amount,transaction.apkey)
         if status == 'Completed':
@@ -246,7 +245,6 @@ def generate_seats(request):
     if not representation or not ticket_class or not seat_group or not representation.job_id:
         logging.info('Task generate_seats - Invalid input')
         return HttpResponse("Invalid input")
-    logging.info(repr(representation))
     event = representation.event
     if job_id != representation.job_id or representation.status != 'Generating':
         logging.info('Task generate_seats - Nothing to do')
@@ -295,7 +293,7 @@ def generate_seats(request):
         slice = slice + put_limit
     if done:
         paymentStatus = None
-        if representation.total_cost() == 0:
+        if representation.publishing_cost() == 0:
             paymentStatus = 'Completed'
         else:
             memo = "Payment of %.2f for publishing %d tickets (at 0.01$/ticket) for %s" % (representation.publishing_cost(),representation.event.nbr_assigned_seats(),representation.event.name + ', ' + str(representation.date))
@@ -319,7 +317,6 @@ def generate_seats(request):
             representation.revenues = 0.0
             representation.job_id = None
             representation.put()
-            logging.debug(repr(representation))
             memcache.set(job_id + '-count', memcache.get(job_id + '-total')) #@UndefinedVariable
             memcache.set(job_id + '-message', 'Finished') #@UndefinedVariable
             logging.info('Task generate_seats - Completed')
@@ -359,6 +356,15 @@ def clean_reservation(request):
     logging.info('Task clean_reservation - Done') 
     return HttpResponse()
 
+def reverse_transaction(request):
+    logging.info('Task reverse_transaction - Start')
+    transaction = Transaction.get(request.POST['transaction'])
+    #TODO: Reverse transaction
+    logging.info('Task reverse_transaction - Done')
+    return HttpResponse()
+
+
+
 def clean_payment(request):
     return HttpResponseServerError('Not implemented')
 
@@ -368,22 +374,29 @@ def update_available_tickets(request):
     if representation:
         timestamp = memcache.get(str(representation.key()) + '-ticket_timestamp') #@UndefinedVariable
         representation.calc_available_tickets(timestamp)
-        memcache.delete(str(representation.key()) + '-ticket_timestamp') #@UndefinedVariable
         if representation.available_tickets == 0:
             representation.status = 'Sold Out'
         else:
             if representation.status == 'Sold Out':
                 representation.status = 'On Sale'
-        representation.put()
+        memcache.delete(str(representation.key()) + '-ticket_timestamp') #@UndefinedVariable
+        try:
+            representation.put()
+        except:
+            memcache.set(str(representation.key()) + '-ticket_timestamp',timestamp) #@UndefinedVariable
     return HttpResponse()
 
 def update_representation_revenues(request):
     representation = Representation.get(request.POST['representation'])
     if representation:
         timestamp = memcache.get(str(representation.key()) + '-ticket_sold_timestamp') #@UndefinedVariable
-        memcache.delete(str(representation.key()) + '-ticket_sold_timestamp') #@UndefinedVariable
         representation.calc_revenues(timestamp)
-        representation.put()
+        memcache.delete(str(representation.key()) + '-ticket_sold_timestamp') #@UndefinedVariable
+        try:            
+            representation.put()
+        except:
+            memcache.set(str(representation.key()) + '-ticket_sold_timestamp',timestamp) #@UndefinedVariable
+            raise
     return HttpResponse()
 
 
@@ -501,7 +514,6 @@ def schedule_close_representations(request):
             duration = 360
         close_date = representation.date + timedelta(minutes=duration)
         long_proc_queue = Queue(name='long-term-processing')
-        logging.debug(repr(long_proc_queue))
         task = Task(url='/tasks/close_representation/', params={'representation':representation.key()},eta=close_date)
         try:
             task.add(queue_name='long-term-processing')
@@ -522,7 +534,6 @@ def schedule_put_on_sales(request):
     for event in events: 
         long_proc_queue = Queue(name='long-term-processing')
         onesaletime = time.mktime(event.onsale_date.timetuple())
-        logging.debug(event.onsale_date)
         task = Task(url='/tasks/put_on_sale/', params={'event':event.key(),'timestamp':onesaletime,}, eta=event.onsale_date)
         long_proc_queue.add(task)
     logging.info('schedule_put_on_sales - End') 

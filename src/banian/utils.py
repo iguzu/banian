@@ -7,13 +7,15 @@ from ragendja.template import render_to_response
 from django.forms.fields import Field
 from django.forms.widgets import Textarea
 from google.appengine.api.labs import taskqueue
-from banian.paypal import processPayment, processPaymentEx
-from django.forms.forms import ValidationError
+from google.appengine.api import memcache
 
+from banian.paypal import processPaymentEx
+import urllib
+from datetime import datetime
 import math
 import logging #@UnusedImport
 import HTMLParser
-
+import gaepytz
 from google.appengine.api import images
 from google.appengine.ext import db
 
@@ -29,6 +31,7 @@ from django.views.generic.create_update import lookup_object, get_model_and_form
 from ragendja.dbutils import get_object #@UnresolvedImport
 from banian.models import google_images, Image, Seat, SeatGroup, fetch_limit,\
     UserEvent, max_ticket_limit, TicketClass
+from django.core.urlresolvers import reverse
         
 
 
@@ -39,6 +42,7 @@ def auto_loader():
     
 
 def transfer_to_paypal(request,url):
+    url = urllib.quote(url)
     return render_to_response(request, "banian/transfering.html", {'redirect':url,})
 
 def create_object(request, model=None, template_name=None,
@@ -318,26 +322,48 @@ def location_window(latitude, longitude, radius, units):
     return lng_min, lat_min, lng_max, lat_max 
 
 
-def payment(request, representation, data):
-    memo = "Tickets for %s on %s at %s:\n"
+def preparePayment(request, representation, data,transaction):
+    memo = "Tickets for %s on %s at %s:\n" % (representation.event.name,representation.date,representation.venue.name)
     total = 0
-    for key,value in data.itertiems():
+    for key,value in data.iteritems():
         ticket_class = TicketClass.get(key)
-        memo = memo + " - %d tickets at %.2f\n" % (value,ticket_class.price)
+        memo = memo + " - %d tickets at %.2f\n\n" % (value,ticket_class.price)
         total = total + ticket_class.price * value
     memo = memo + " - For a total of %.2f\n" % total
-    paymentStatus, paykey = processPaymentEx(request,memo, total, representation.owner.paypal_id)
-    if paymentStatus == "Created": 
-        return transfer_to_paypal(request, "https://www.paypal.com/webscr?cmd=_ap-payment&paykey=%s" % paykey)
-    else:
-        raise ValidationError("An error has occurred")
-        #TODO: put some messages 
+    return processPaymentEx(request=request,
+                            memo=memo,
+                            amount=total,
+                            apkey=None,
+                            receiver=representation.owner.paypal_id,
+                            returnURL='http://www.iguzu.com' + reverse('banian.views.show_transaction',kwargs={'key':transaction.key()}) + '?status=completed',
+                            cancelURL='http://www.iguzu.com' + reverse('banian.views.show_transaction',kwargs={'key':transaction.key()}) +'?status=cancelled')
 
-def take_seats(representation, reservation, data):
+def take_seats(representation, reservation):
     seats = Seat.all().filter('reservation =', reservation).ancestor(representation).fetch(fetch_limit)
     for index, item in enumerate(seats): #@UnusedVariable
         seats[index].availability = 2
     db.put(seats)
+
+def generate_tickets(request,transaction):
+        try:
+            db.run_in_transaction(take_seats, transaction.representation, transaction.reservation)           
+        except:
+            #TODO: if all tickets are general admission, try to get another seat.
+            taskqueue.add(url='/tasks/clean_reservation/', params={'reservation':transaction.reservation, 'representation':transaction.representation.key()}, countdown=0)
+            taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=0)
+            Message(user=request.user, message=ugettext("Unable to finalize, transaction will be reversed...")).put()
+            return 'unable_take_seats'
+
+        if not memcache.get(str(transaction.representation.key()) + '-ticket_sold_timestamp'): #@UndefinedVariable
+            taskqueue.add(url='/tasks/update_representation_revenues/',params={'representation':transaction.representation.key(),}, countdown=10)
+        memcache.set(str(transaction.representation.key()) + '-ticket_sold_timestamp',datetime.utcnow().replace(tzinfo=gaepytz.utc)) #@UndefinedVariable
+        transaction.status = 'Generating Tickets'
+        transaction.put()
+        taskqueue.add(url='/tasks/generate_tickets/', params={'transaction':transaction.key(),'reservation':transaction.reservation, 'owner':request.user.key()}, countdown=0)
+        if Seat.gql("WHERE availability IN :1", [0, 1]).count(1) == 0:
+            transaction.representation.status = 'Sold Out'
+            transaction.representation.put()
+        return 'success'
 
 def generate_error_report(user, representation, reservation, data):
         raise AssertionError('Not Implemented')

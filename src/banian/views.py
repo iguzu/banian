@@ -27,15 +27,17 @@ from banian.models import Venue, Event, TicketClass, Seat, Image, Representation
                           Ticket, Transaction, UserEvent, max_ticket_limit,\
     TicketScan
 from banian.utils import update_object, create_object, get_own_object_or_404, points2distance, \
-                         location_window, reserve_seats, payment, \
+                         location_window, reserve_seats, preparePayment, \
                          take_seats, calc_ticket_class_available, ElementExtracter,\
-    transfer_to_paypal
+    transfer_to_paypal, generate_tickets
 from banian.model_utils import construct_timezone_choice  
 from banian.forms import EventForm, SelectVenueForm, SettingsForm, TicketClassForm, \
                          SelectSeatConfigForm, RepresentationForm, SelectTicketForm, SelectDistanceForm, QuickEventWizard,\
     QEHowManyForm, QEImagesNoteForm, QEOptionsForm, QEPreviewForm, QEWhatForm,\
     QEWhenForm, QEWhereForm, ValidationForm
 from banian.models import google_images
+import sys
+import urllib
 import gaepytz
 import logging
 
@@ -458,7 +460,6 @@ def seats(request,key):
 def unpublish_representation(request, key):
     representation = get_own_object_or_404(request.user,Representation, key)
     event = get_own_object_or_404(request.user, Event, representation.event.key())
-    logging.debug('here0')
     if Seat.all().filter('representation =', representation).filter('availability !=', 0).count() :
         Message(user=request.user, message=ugettext("You cannot unpublish an event for which some tickets were already sold.")).put()
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':representation.event.key(),}))
@@ -466,15 +467,12 @@ def unpublish_representation(request, key):
         Message(user=request.user, message=ugettext("You cannot unpublish an event that was not published first")).put()
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':representation.event.key(),}))        
     if request.method == 'POST':
-        logging.debug('here1')
-
         job_id = str(uuid4())
         representation.job_id = job_id
         representation.status = 'Canceling'
         cancelStatus = banian.paypal.processCancelPreApproval(representation.pre_approval_key)
         if cancelStatus == 'paypal_unexpected':
             logging.critical(repr(representation))
-        logging.debug('here2')
         representation.pre_approval_status = None
         representation.pre_approval_key = None
         representation.paypal_id = None
@@ -482,7 +480,6 @@ def unpublish_representation(request, key):
         total_seats = 0
         for ticket_class in representation.event.ticketclass_set:
             total_seats = total_seats + ticket_class.nbr_seats()
-        logging.debug('here3')
         taskqueue.add(url='/tasks/delete_seats/', params={'representation':representation.key(),'job_id':job_id}, countdown=0)
         memcache.set(job_id + '-count', 0) #@UndefinedVariable
         memcache.set(job_id + '-message', 'Not Started') #@UndefinedVariable
@@ -648,52 +645,19 @@ def buy_representation(request, key):
         if form.is_valid():
             data = form.extract()
             reservation = str(uuid4())
-#            try:
-            try:
-                db.run_in_transaction(reserve_seats, representation, reservation, data)
-                taskqueue.add(url='/tasks/clean_reservation/', params={'reservation':reservation, 'representation':representation.key()}, countdown=300)                
-                if not memcache.get(str(representation.key()) + '-ticket_timestamp'): #@UndefinedVariable
-                    taskqueue.add(url='/tasks/update_available_tickets/',params={'representation':representation.key(),}, countdown=10)
-                memcache.set(str(representation.key()) + '-ticket_timestamp',datetime.utcnow().replace(tzinfo=gaepytz.utc)) #@UndefinedVariable
-            except:
-                Message(user=request.user, message=ugettext("Seat could not be reserved try again in few minutes...")).put()
-                return HttpResponseRedirect(reverse('banian.views.buy_representation',kwargs={'key':representation.key(),}))
-            try:
-                error,paykey = payment(request.user, representation, data)
-                transfer_to_paypal(request,"https://www.paypal.com/webscr?cmd=_ap-payment&paykey=%s" % paykey ) 
-
-                if error:
-                    Message(user=request.user, message=ugettext("Your payment was refused")).put()
-                    return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + str(error))                     
-            except:
-                taskqueue.add(url='/tasks/clean_reservation/', params={'reservation':reservation, 'representation':representation.key()}, countdown=0)
-                Message(user=request.user, message=ugettext("Payment system not available, try again later.")).put()
-                return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + str(2000))
-            try:
-                db.run_in_transaction(take_seats, representation, reservation, data)           
-            except:
-                taskqueue.add(url='/tasks/clean_reservation/', params={'reservation':reservation, 'representation':representation.key()}, countdown=0)
-                taskqueue.add(url='/tasks/clean_payment/', params={'reservation':reservation, 'representation':representation.key()}, countdown=0)
-                Message(user=request.user, message=ugettext("Purchase could not be completed, transaction was reversed...")).put()
-                return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + str(3000))
-            if event.limit_duration:
-                door_date = representation.date - timedelta(minutes=representation.event.door_open)
-            else:
-                door_date = representation.date
-
             total = 0; total_amount = 0.0 ; index = 0
             for key, item in data.iteritems():                
                 total_amount = total_amount + ticketclass_list[index].price * item
                 total = total + item
                 index = index + 1
-            memcache.set(reservation + '-count', 0) #@UndefinedVariable
-            memcache.set(reservation + '-message', 'Not Started') #@UndefinedVariable
-            memcache.set(reservation + '-total', total) #@UndefinedVariable
-            event_thumbnail_image = None; event_poster_image = None
-            if event.thumbnail_image:
-                event_thumbnail_image = event.thumbnail_image
-            if event.poster_image:
-                event_poster_image = event.poster_image
+
+            ## Phase 1, Create the transaction
+            if event.limit_duration:
+                door_date = representation.date - timedelta(minutes=representation.event.door_open)
+            else:
+                door_date = representation.date
+            event_thumbnail_image = event.thumbnail_image or None
+            event_poster_image = event.poster_image or None
             transaction = Transaction(owner=request.user,type='Purchase',
                                       event=event,representation=representation,t_id=reservation,venue_name=event.venue.name,
                                       venue_address=event.venue.address,event_name=event.name,
@@ -701,23 +665,56 @@ def buy_representation(request, key):
                                       representation_date=representation.date,event_performer = event.performer,
                                       event_note=event.note,event_web_site=event.web_site,
                                       venue_web_site=event.venue.web_site,representation_door_date=door_date,
-                                      event_thumbnail_image = event_thumbnail_image,status="Processing",
-                                      total_amount=total_amount,event_poster_image = event_poster_image, nbr_tickets=total
-                                      )
+                                      event_thumbnail_image = event_thumbnail_image,status="Processing Payment",
+                                      total_amount=total_amount,event_poster_image = event_poster_image, nbr_tickets=total,
+                                      reservation=reservation)
             transaction.put()
-            if not memcache.get(str(representation.key()) + '-ticket_sold_timestamp'): #@UndefinedVariable
-                taskqueue.add(url='/tasks/update_representation_revenues/',params={'representation':representation.key(),}, countdown=10)
-            memcache.set(str(representation.key()) + '-ticket_sold_timestamp',datetime.utcnow().replace(tzinfo=gaepytz.utc)) #@UndefinedVariable
 
-            taskqueue.add(url='/tasks/generate_tickets/', params={'transaction':transaction.key(),'reservation':reservation, 'owner':request.user.key()}, countdown=0)
-#            except :
-#                generate_error_report(request.user, representation, reservation, data)
-#                Message(user=request.user, message=ugettext("An unexpected error has occurs during the purchase. Technical service has been made aware and will contact you within 24h...")).put()
-#                return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + str(4000))
-            if Seat.gql("WHERE availability IN :1", [0, 1]).count(1) == 0:
-                representation.status = 'Sold Out'
-                representation.put()
-            return HttpResponseRedirect(reverse('banian.views.show_transaction', kwargs={'key':str(transaction.key()),})+ "?new=True")
+            ## Phase 2, request payment key if the payment is required
+            paykey = None
+            if total_amount and representation.owner != request.user:
+                status,paykey = preparePayment(request, representation, data, transaction)
+                if status != 'Created':
+                    taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=300)
+                    Message(user=request.user, message=ugettext("An error occured while preparing your payment")).put()
+                    return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + str(status))
+                else:
+                    transaction.payment_key = paykey
+                    transaction.payment_status = 'Processing'
+                    transaction.put()
+            else:
+                transaction.payment_status = 'Completed'
+                transaction.payment_key = None
+                transaction.put()
+            
+            ## Phase 3 reserve seat
+            try:
+                db.run_in_transaction(reserve_seats, representation, reservation, data)
+                taskqueue.add(url='/tasks/clean_reservation/', params={'reservation':reservation, 'representation':representation.key()}, countdown=300)
+                taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=300)
+                if not memcache.get(str(representation.key()) + '-ticket_timestamp'): #@UndefinedVariable
+                    taskqueue.add(url='/tasks/update_available_tickets/',params={'representation':representation.key(),}, countdown=10)
+                memcache.set(str(representation.key()) + '-ticket_timestamp',datetime.utcnow().replace(tzinfo=gaepytz.utc)) #@UndefinedVariable
+            except:
+                taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=0)
+                logging.critical(repr(sys.exc_info()))
+                Message(user=request.user, message=ugettext("Seat could not be reserved try again in few minutes...")).put()
+                return HttpResponseRedirect(reverse('banian.views.buy_representation',kwargs={'key':representation.key(),}))
+            
+            ## Phase 4, if payment required, transfer the user to paypal to execute the payment
+            if transaction.payment_status == 'Processing':
+                return transfer_to_paypal(request,"https://www.sandbox.paypal.com/webscr?cmd=_ap-payment&paykey=%s" % paykey )
+            
+            ## Phase 5, if no payment is required, take the seats
+            elif transaction.payment_status == 'Completed':
+                status = generate_tickets(request,transaction)
+                if status != 'success':
+                    return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + status)
+                else:
+                    return HttpResponseRedirect(reverse('banian.views.show_transaction', kwargs={'key':str(transaction.key()),})+ "?new=True")
+            else:
+                logging.critical('Unexpected Payment Status Code')
+                return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + 'unexpected_payment_error')
     else:
         form = SelectTicketForm(representation=representation, ticketclass_list=ticketclass_list,
                                 already_purchase_tickets=already_purchase_tickets, max_tickets=max_tickets)
@@ -769,6 +766,12 @@ def transactions(request):
 def show_transaction(request, key):
     extra = {}
     transaction = get_own_object_or_404(request.user, Transaction, key)
+    if transaction.payment_status == 'Processing':
+        status = banian.paypal.getPaymentDetail(transaction.payment_key)
+        if status == 'Completed':
+            transaction.payment_status = 'Completed'
+            transaction.put()
+            generate_tickets(request, transaction)
     ticket_set = db.get(transaction.ticket_keys)
     extra['ticket_set'] = ticket_set
     if 'new' in request.GET:
@@ -881,6 +884,9 @@ def edit_event(request,key):
 
 def redirect_url(request):
     redirect = request.GET['redirect']
+    url = urllib.unquote(redirect)
+    return HttpResponseRedirect(url)
+    
     return HttpResponseRedirect("https://www.sandbox.paypal.com/webscr?cmd=_ap-preapproval&preapprovalkey=" + redirect)
 
 @login_required
