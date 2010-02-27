@@ -31,7 +31,7 @@ COMBINE_MEDIA = {
 
 # Change your email settings
 if on_production_server:
-    DEFAULT_FROM_EMAIL = 'support@iguzu.com'
+    DEFAULT_FROM_EMAIL = 'sebastien.boirelavigne@gmail.com'
     SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Make this unique, and don't share it with anybody.
