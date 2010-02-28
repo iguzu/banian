@@ -76,7 +76,9 @@ def show_event(request, key):
             message = job_info[job_id + "-message"]
         if job_id + "-total" in job_info and job_id + "-count" in job_info:
             progress = (float(job_info[job_id + "-count"]) / float(job_info[job_id + "-total"])) * 100.0
-    context = {'representation':representation,'progress':progress, 'message':message,}    
+    context = {'representation':representation,'progress':progress, 'message':message,}
+    if representation and representation.pre_approval_status == "Processing":
+        context['display_unpublish'] = True
     if representation and representation.status in ('On Sale', 'Published'):
         if Ticket.all().filter('representation =',event.first_representation()).get():
             context['display_cancel'] = True
@@ -463,7 +465,7 @@ def unpublish_representation(request, key):
     if Seat.all().filter('representation =', representation).filter('availability !=', 0).count() :
         Message(user=request.user, message=ugettext("You cannot unpublish an event for which some tickets were already sold.")).put()
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':representation.event.key(),}))
-    if representation.status != 'Published' and representation.status !='On Sale':
+    if representation.status != 'Published' and representation.status !='On Sale' and representation.pre_approval_status != 'Processing':
         Message(user=request.user, message=ugettext("You cannot unpublish an event that was not published first")).put()
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':representation.event.key(),}))        
     if request.method == 'POST':
