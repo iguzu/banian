@@ -6,6 +6,8 @@
 <!--
  		{% for slider in form.sliders %}
  			var {{slider.id}}_old = 0;
+ 			var price = {{slider.price}};
+ 			var currency = "$"
 		{% endfor %}
  	$(document).ready( function() {
  	 	function twit(event, ui,slider_id,old_value) {
@@ -21,8 +23,17 @@
 									}
 								});
 							$("#"+slider_id).val(ui.value);
+							if (price != 0) {
+								$("#id_total_purchase_amount").text((price*ui.value).toFixed(2).toString() + " $");	
+							} else {
+								$("#id_total_purchase_amount").text("Free");
+							}
+							
 						}
 					}
+		if (price == 0) {
+			$("#id_total_purchase_amount").text("Free");
+		}
  		{% for slider in form.sliders %}
 			$(function() {
 				$("#{{slider.id}}_slider").slider({
@@ -38,6 +49,7 @@
 						$("#{{slider.id}}").val(ui.value);
 					}
 				});
+				$("#{{slider.id}}_scale_max").text({{slider.max}})
 			});
 		{% endfor %}
 	}); 
@@ -76,11 +88,18 @@
 	<fieldset><legend>Tickets</legend>
 <table>
     {% for field in form %}
-    <tr><td><label for="{{field.auto_id}}">{{field.label}}:</label></td><td>{{field}}<div id="{{field.auto_id}}_slider" style="width:200px"></div ></td> <td>{{field.help_text}}</td></tr>
+    <tr><td><label for="{{field.auto_id}}">{{field.label}}:</label></td><td>{{field}}<table style="width:217px"><tr><td colspan="2"><div id="{{field.auto_id}}_slider" style="width:200px"></td></tr><tr><td id="{{field.auto_id}}_scale_min" style="text-align:left;">0</td><td id="{{field.auto_id}}_scale_max" style="text-align:right;">0</td></tr></div ></table></td> <td>{{field.help_text}}</td></tr>
+    
+    
+    
+    
+    
+    
+    
     <tr><td></td></tr>
     {% endfor %}
 </table>
-<p><label>Total Purchase Amount:</label><span id="id_total_purchase_amount">0.00</span>$</p>
+<p><label>Total Purchase Amount: </label><span id="id_total_purchase_amount">0.00 $</span></p>
 {%if already_purchase_tickets %}
 <p>You already purchased {{already_purchase_tickets}} tickets for this representation, {%if max_tickets%}you are limited to purchase {{max_tickets}} tickets{%else%}you are not allowed to purchase any other tickets{%endif%}</p>
 {%else%}

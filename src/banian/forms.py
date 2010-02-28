@@ -348,9 +348,10 @@ class SelectSeatConfigForm(Form):
         venue.choices = choices
 
 class Slider(object):
-    def __init__(self,id,max):
+    def __init__(self,id,max,price):
         self.id = id
         self.max = max
+        self.price = price
 
 class SelectTicketForm(Form):
     class Meta:
@@ -364,9 +365,12 @@ class SelectTicketForm(Form):
         self.sliders = []
         id = 1
         for ticket_class in self._ticketclass_list:
-            self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (%.2f $)' % ticket_class.price,initial=0,help_text=ticket_class.total_available_text)
+            if ticket_class.price:
+                self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (%.2f $)' % ticket_class.price,initial=0,help_text=ticket_class.total_available_text)
+            else:
+                self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (Free)',initial=0,help_text=ticket_class.total_available_text)
             self.fields['tc' + str(id)].widget.attrs['class'] = 'ui-slider'
-            self.sliders.append(Slider('id_tc' + str(id),ticket_class.max_tickets))
+            self.sliders.append(Slider('id_tc' + str(id),ticket_class.max_tickets,ticket_class.price))
             id += 1
     def extract(self):
         id =1
