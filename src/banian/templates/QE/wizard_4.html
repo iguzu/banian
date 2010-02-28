@@ -94,7 +94,7 @@
 				$("#id_max_tickets_slider").slider({
 					value:6,
 					min: 1,
-					max: 50,
+					max: 30,
 					step: 1,
 					slide: function(event, ui) {
 						$("#id_max_tickets").val(ui.value);
@@ -128,14 +128,14 @@
          <tr><td><label for="id_cancellable">{{form.cancellable.label}}:</label></td><td>{{form.cancellable}}</td></tr>
          <tr><td colspan="2"><table class="prepend-1" id="cancellable_group" style="display:none">
 	         <tr><td><label for="id_cancel_fees">{{form.cancel_fees.label}}:</label></td><td>{{form.cancel_fees}} %</td></tr>
-	         <tr><td></td><td><div id="id_cancel_fees_slider" style="width:300px"></div ></td></tr>
+	         <tr><td></td><td><table style="width:217px"><tr><td colspan="2"><div id="id_cancel_fees_slider" style="width:300px"></div ></td></tr><tr><td id="id_cancel_fees_scale_min" style="text-align:left;">0</td><td id="id_cancel_fees_scale_max" style="text-align:right;">90</td></tr></table></td></tr>
 	         <tr><td><label for="id_cancel_delay">{{form.cancel_delay.label}}:</label></td><td>{{form.cancel_delay}} day(s) before the event</td></tr>
-	         <tr><td></td><td><div id="id_delay_slider" style="width:300px"></div ></td></tr>
+	         <tr><td></td><td><table style="width:217px"><tr><td colspan="2"><div id="id_delay_slider" style="width:300px"></div ></td></tr><tr><td id="id_delay_scale_min" style="text-align:left;">0</td><td id="id_delay_scale_max" style="text-align:right;">90</td></tr></table></td></tr>
 	         </table></td></tr>
 	     <tr><td><label for="id_limit_tickets">{{form.limit_tickets.label}}:</label></td><td>{{form.limit_tickets}}</td></tr>
 	     <tr><td colspan="2"><table class="prepend-1" id="max_ticket_group" style="display:none">
 	         <tr><td><label for="id_max_tickets">{{form.max_tickets.label}}:</label></td><td>{{form.max_tickets}}</td></tr>
-	         <tr><td></td><td><div id="id_max_tickets_slider" style="width:300px"></div ></td></tr></table>
+	         <tr><td></td><td><table style="width:217px"><tr><td colspan="2"><div id="id_max_tickets_slider" style="width:300px"></div ></td></tr><tr><td id="id_max_tickets_scale_min" style="text-align:left;">0</td><td id="id_max_tickets_scale_max" style="text-align:right;">50</td></tr></table></td></tr></table>
 
 </table>
 </fieldset>

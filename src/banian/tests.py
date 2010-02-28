@@ -1603,7 +1603,10 @@ class BuyTestCase(TestCase):
     def testBuyPast(self):
         pass
 
-
+    def testSelectTicket(self):
+        r= self.client.get(reverse('banian.views.buy_representation',kwargs={'key':self.e.first_representation().key()}))
+        MarkupValidation(self,r.content)
+        
     def testBuy(self):
         rep = self.e.first_representation()
         r = buyTickets(self,rep,5)

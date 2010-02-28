@@ -47,6 +47,11 @@
 					},
 					slide: function(event, ui) {
 						$("#{{slider.id}}").val(ui.value);
+						if (price != 0) {
+							$("#id_total_purchase_amount").text((price*ui.value).toFixed(2).toString() + " $");	
+						} else {
+							$("#id_total_purchase_amount").text("Free");
+						}
 					}
 				});
 				$("#{{slider.id}}_scale_max").text({{slider.max}})
@@ -62,14 +67,14 @@
  <form action="{%if not object %}?venue={{ venue_key }}{% endif %}" method="post" enctype="multipart/form-data">
 {% if form.errors %}<div class="error">{{ form.errors }}</div>{% endif %}    
  <fieldset><legend class="title">{{ object.name }}</legend>
-   <table><tr>{% if object.poster_image %}<td><img src="{% url banian.views.image key=object.poster_image.key %}"></td>{% endif %}<td>
+   <table><tr>{% if object.poster_image %}<td><img src="{% url banian.views.image key=object.poster_image.key %}" alt="{{objec.name}}"></td>{% endif %}<td>
    
    <fieldset><legend>Event Details</legend>
          <table>
           <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>
-          <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</a></td></tr>
+          <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
           <tr><td><strong>Date:</strong></td><td>{{ object.first_representation.date|date:"l, F jS Y \a\t P" }}</td></tr>          
-          <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</a></td></tr>
+          <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
 {%if object.description%}<tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>{%endif%}
 {%if object.web_site%}<tr><td><strong>Web Site:</strong></td><td><a href="{{ object.web_site }}">{{ object.web_site }}</a></td></tr>{%endif%}
 {%if object.email%}<tr><td><strong>email:</strong></td><td><a href="mailto:{{ object.email }}">{{ object.email }}</a></td></tr>{%endif%}
@@ -88,7 +93,7 @@
 	<fieldset><legend>Tickets</legend>
 <table>
     {% for field in form %}
-    <tr><td><label for="{{field.auto_id}}">{{field.label}}:</label></td><td>{{field}}<table style="width:217px"><tr><td colspan="2"><div id="{{field.auto_id}}_slider" style="width:200px"></td></tr><tr><td id="{{field.auto_id}}_scale_min" style="text-align:left;">0</td><td id="{{field.auto_id}}_scale_max" style="text-align:right;">0</td></tr></div ></table></td> <td>{{field.help_text}}</td></tr>
+    <tr><td><label for="{{field.auto_id}}">{{field.label}}:</label></td><td>{{field}}tickets<table style="width:217px"><tr><td colspan="2"><div id="{{field.auto_id}}_slider" style="width:200px"></div ></td></tr><tr><td id="{{field.auto_id}}_scale_min" style="text-align:left;">0</td><td id="{{field.auto_id}}_scale_max" style="text-align:right;">0</td></tr></table></td> <td>{{field.help_text}}</td></tr>
     
     
     
