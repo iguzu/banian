@@ -306,6 +306,9 @@ class Event(GeoModel):
                 self._available_tickets = self._available_tickets + rep.available_tickets
         return self._available_tickets
 
+    def tickets_sold(self):
+        return self.nbr_seats() - self.available_tickets()
+
     def nbr_seats(self):
         if self.seat_configuration:
             return self.seat_configuration.nbr_seat

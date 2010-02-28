@@ -87,15 +87,23 @@
           <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
           <tr><td><strong>Date:</strong></td><td>{{ object.first_representation.date|date:"l, F jS Y \a\t P" }}</td></tr>
           <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
-          <tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>                    
-          <tr><td><strong>Web Site:</strong></td><td>{%if object.web_site%}<a href="{{ object.web_site }}">{{ object.web_site }}</a>{%endif%}</td></tr>
-          <tr><td><strong>email:</strong></td><td>{%if object.email%}<a href="mailto:{{ object.email }}">{{ object.email }}</a>{%endif%}</td></tr>
-          <tr><td><strong>Duration:</strong></td><td>{%if object.limit_duration%}{{ object.duration  }} minutes{%else%}None{%endif%}</td></tr>
+{% if object.description %}         <tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>{%endif%}                    
+{% if object.web_site %}			<tr><td><strong>Web Site:</strong></td><td>{%if object.web_site%}<a href="{{ object.web_site }}">{{ object.web_site }}</a>{%endif%}</td></tr>{%endif%}
+{% if object.email %} 	        	<tr><td><strong>email:</strong></td><td>{%if object.email%}<a href="mailto:{{ object.email }}">{{ object.email }}</a>{%endif%}</td></tr>{%endif%}
+{% if object.limit_duration %}          <tr><td><strong>Duration:</strong></td><td>{{ object.duration  }} minutes</td></tr>{%endif%}
           <tr><td><strong>Door opens/Access:</strong></td><td>{{ object.door_open|floatformat:0  }} minutes before the event</td></tr>
-          <tr><td><strong>Note:</strong></td><td>{{ object.note  }}</td></tr>                    
+{%if object.note%}          		<tr><td><strong>Note:</strong></td><td>{{ object.note  }}</td></tr>{%endif%}                    
       </table>      
   </fieldset>
   </td></tr></table>
+  <fieldset><legend>Event information</legend>
+  <table>
+  <tr><td style="width:125px"><strong>Total Value:</strong></td><td>{{object.representation_value|floatformat:2}} $</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{{object.revenues|floatformat:2}} $</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}}</td></tr>
+  <tr><td colspan="6">Historical sales coming graphic soon...</td></tr>
+  </table>
+  
+  </fieldset>
+  
 {%if object.mutable %}
   <a class="sexybutton" href="{% url banian.views.edit_event key=object.key%}"><span><span><span class="edit">Edit</span></span></span></a>
   <a class="sexybutton" href="{% url banian.views.delete_event key=object.key %}"><span><span><span class="delete">Delete</span></span></span></a>
