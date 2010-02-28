@@ -2611,3 +2611,13 @@ class RegisterLoginTestCase(TestCase):
 
     def testLogin10User(self):
         pass
+
+
+class TransferPageCase(TestCase):
+
+    def setUp(self):
+        self.user = createUser(self)
+
+    def testTransferingURL(self):        
+        r= self.client.get(reverse('banian.views.transfering',kwargs={'url':urllib.quote('http://www.google.com')}))
+        MarkupValidation(self,r.content)

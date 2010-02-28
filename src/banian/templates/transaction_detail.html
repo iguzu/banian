@@ -4,6 +4,7 @@
 <script type="text/javascript">
 <!--
 {%if not object.ticket_set%}
+{%ifequal object.payment_status "Completed" %}
 	var status = 0
 	var html = ''
 	var total = 0.0
@@ -22,6 +23,7 @@
  	$(document).ready( function() {
 		lookupTickets();
  	});
+ {%endifequal%}
  {%endif%}
  //-->
  </script>
@@ -30,7 +32,8 @@
 {% if new %}<div class="notice">Thank you for making your purchase via Iguzu. Your order has been placed and your tickets will be generated within few minutes.<br>A copy of this order will be sent shorty by email at {{ object.owner.username }}.</div>{%endif%}
   <fieldset><legend class="title">Ticket {{object.type}} -- {{object.date|date:"M jS Y G:i:s"}}</legend>
    <div style="text-align:right">
-	<a class="sexybutton" href="{% url banian.views.download_tickets%}?transaction_key={{object.key}}"><span><span><span class="preview">View All Tickets</span></span></span></a>
+{%ifequal object.payment_status "Processing" %}<a class="sexybutton" href="{{paypal_transfer_url}}"><span><span><span class="accept">Approve</span></span></span></a>{%endifequal%}
+{%ifequal object.payment_status "Completed" %} <a class="sexybutton" href="{% url banian.views.download_tickets%}?transaction_key={{object.key}}"><span><span><span class="preview">View All Tickets</span></span></span></a>{%endifequal%}
    </div>
    <fieldset><legend>Transaction Details</legend>
          <table>
@@ -73,7 +76,8 @@
                 <td class="row">{{ticket.price|floatformat:2}} $</td>
             </tr>
 		{% empty %}
-		<tr><td colspan="2"><img src="{{ MEDIA_URL }}global/ajax-loader.gif" alt="Generating"><br><i>Generating tickets, please wait...</i></td></tr>
+		{%ifequal object.payment_status "Processing" %}<tr><td colspan="2"><i>Please approve the payment to generate the tickets</i></td></tr>{%else%}
+		<tr><td colspan="2"><img src="{{ MEDIA_URL }}global/ajax-loader.gif" alt="Generating"><br><i>Generating tickets, please wait...</i></td></tr>{%endifequal%}
         {% endfor %}
     </tbody>     
   </table>

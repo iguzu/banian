@@ -49,5 +49,5 @@ urlpatterns = patterns('banian.views', #@UndefinedVariable
 # (r'^events/quick_event/$', 'quick_event'), 
  (r'^events/preview_sale_page/(?P<key>.+)$', 'preview_sale_page'),
  (r'^events/preview_ticket/(?P<key>.+)$', 'preview_ticket'),
- 
+ (r'^transfering/(?P<url>.+)$', 'transfering'), 
 )
