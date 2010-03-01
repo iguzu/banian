@@ -255,9 +255,6 @@ class Event(GeoModel):
             for tc in self.ticket_classes():
                 self._representation_value = self._representation_value + tc.value()
         return self._representation_value
-        
-        
-        return self.value()/len(self.representations())
 
     def revenues(self):
         if not hasattr(self,'_revenues'):
