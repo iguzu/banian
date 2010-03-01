@@ -273,6 +273,12 @@ class Event(GeoModel):
                 self._nbr_tickets = self._nbr_tickets + rep.nbr_tickets
         return self._nbr_tickets
 
+    def tickets_sold(self):
+        if self.status != 'Draft':
+            return self.nbr_seats() - self.nbr_tickets()
+        else:
+            return 0
+
     def timezone_name(self):
         if hasattr(self,'_timezone_name'):
             return self._timezone_name
