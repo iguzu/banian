@@ -307,6 +307,7 @@ def generate_seats(request):
                 representation.status = 'Published'
             else:
                 representation.status = 'On Sale'
+            representation.published_date = datetime.utcnow().replace(tzinfo=gaepytz.utc)
             representation.value = 0.0
             for tc in representation.event.ticketclass_set:
                 representation.value = representation.value + tc.value()

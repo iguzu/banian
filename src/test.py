@@ -1,5 +1,6 @@
 #@PydevCodeAnalysisIgnore
 ## popo
+import array
 class Foo:
   x = 0
   y = 1
@@ -25,10 +26,9 @@ def f(tata):
 
 if __name__ == "__main__":
     a = {'a':1,'b':2}
-    if 'a' in a:
-        
-
-
-#comment yo yo to
     
-    
+    b = array.array('i')
+    b.append(10)
+    for item in b:
+        item = 11
+    print b

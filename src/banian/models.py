@@ -355,6 +355,7 @@ class Representation(GeoModel):
     pre_approval_key = db.StringProperty(indexed=False)
     paypal_id = db.StringProperty(indexed=False)
     timezone = db.StringProperty(indexed=False)
+    published_date = db.DateTimeProperty(indexed=False)
 
     def __init__(self,*args,**kwargs):
         super(Representation,self).__init__(*args,**kwargs)
