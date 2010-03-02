@@ -2,8 +2,32 @@
 {% load istatus %}
 {% block title %}Event Detail{% endblock %}
 {% block extra-head %}
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
-<script type="text/javascript">
+<style type="text/css">
+.ui-tabs .ui-tabs-hide {
+    position: absolute;
+    left: -10000px;
+}</style>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
+    <script type='text/javascript' src='http://www.google.com/jsapi'></script>
+    <script type='text/javascript'>
+      google.load('visualization', '1', {'packages':['annotatedtimeline']});
+	  google.setOnLoadCallback(google.setOnLoadCallback(drawChart));
+
+	  function drawChart() {
+	  	var query = new google.visualization.Query('{%url banian.views.representation_ticket_history key=object.first_representation.key %}');
+	    query.send(handleQueryResponse);
+	  }	  
+      function handleQueryResponse(response) {
+      	if (response.isError()) {
+    		alert('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
+    		return;
+  		}
+		var data = response.getDataTable();
+		var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
+		chart.draw(data, {displayAnnotations: true});
+	  }    
+    </script>
+ <script type="text/javascript">
 <!--
 {%if object.first_representation.job_id%}
 	var count = {{progress}};
@@ -43,7 +67,7 @@
 				$("#tickets-button").show();				
 				$("#id_value").html(available + "/" + available);
 				$("#id_available").html(value);
-				
+ 
 			{%endifequal%}
 		}
 	}
@@ -53,7 +77,11 @@
  	});
  {%endif%}
  //-->
+ $(function() {
+		$("#tabs").tabs();
+	});
   </script>
+ 	
 {% endblock %}
 
 {% block content-leftpane %}
@@ -96,13 +124,14 @@
       </table>      
   </fieldset>
   </td></tr></table>
+{%ifnotequal object.first_representation.status "Draft" %}
   <fieldset><legend>Event information</legend>
   <table>
   <tr><td style="width:125px"><strong>Total Value:</strong></td><td>{{object.representation_value|floatformat:2}} $</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{{object.revenues|floatformat:2}} $</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}}</td></tr>
-  <tr><td colspan="6">Historical sales coming graphic soon...</td></tr>
-  </table>
-  
+  <tr><td colspan="6"><div id='chart_div' style='width: 700px; height: 240px;'></div></td></tr>
+  </table>  
   </fieldset>
+ {%endifnotequal%}
   
 {%if object.mutable %}
   <a class="sexybutton" href="{% url banian.views.edit_event key=object.key%}"><span><span><span class="edit">Edit</span></span></span></a>
@@ -110,5 +139,5 @@
  {%endif%} 
   <a class="sexybutton" href="{% url banian.views.events %}"><span><span><span class="redo">Back</span></span></span></a>
 </fieldset> 
-{% endblock %}
+{% endblock %} 
 

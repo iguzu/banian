@@ -2621,3 +2621,17 @@ class TransferPageCase(TestCase):
     def testTransferingURL(self):        
         r= self.client.get(reverse('banian.views.transfering',kwargs={'url':urllib.quote('http://www.google.com')}))
         MarkupValidation(self,r.content)
+        
+class RepresentationTicketHistoryCase(TestCase):
+
+    def setUp(self):
+        self.user = createUser(self)
+        self.e = addEvent(self,self.user,'test',nbr_seat=10)
+
+    def testHistory(self):
+        r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':self.e.first_representation().key()}),follow=True)
+        self.assertEqual(r.status_code,200)
+        logging.debug(repr(r.content))
+        r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':str(self.e.first_representation().key()) + '?format=%s' % 'JavaScript'}),follow=True)
+        self.assertEqual(r.status_code,200)
+        logging.debug(repr(r.content))

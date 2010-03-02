@@ -40,6 +40,7 @@ import sys
 import urllib
 import gaepytz
 import logging
+import gviz_api
 
 event_edit_form_list = [QEWhatForm,QEWhereForm,QEWhenForm,QEHowManyForm,QEOptionsForm,QEImagesNoteForm,QEPreviewForm]
 
@@ -149,7 +150,33 @@ def add_event_pro(request):
                              extra_context={'venue_key':venue.key(),'timezone':timezone},
                              form_kwargs={'owner':request.user, 'venue':venue,
                                           'choices':seat_configurations, 'initial':initial,})  
-   
+
+@login_required
+def representation_ticket_history(request,key):
+    logging.debug(repr('here!'))
+    get_own_object_or_404(request.user, Representation, key)
+    format = request.GET.get('format','JSON')
+    description = { 'date':'date', 'tickets':'number' }
+    data = [ {'date':datetime.now(),'tickets':0},
+            {'date':datetime.now()+timedelta(days=1),'tickets':0},
+            {'date':datetime.now()+timedelta(days=2),'tickets':0},
+            {'date':datetime.now()+timedelta(days=3),'tickets':3},
+            {'date':datetime.now()+timedelta(days=5),'tickets':3},
+            {'date':datetime.now()+timedelta(days=6),'tickets':5},
+            {'date':datetime.now()+timedelta(days=7),'tickets':5},
+            {'date':datetime.now()+timedelta(days=8),'tickets':6},
+            {'date':datetime.now()+timedelta(days=9),'tickets':12},
+            {'date':datetime.now()+timedelta(days=10),'tickets':15},
+            {'date':datetime.now()+timedelta(days=11),'tickets':20}]
+    dataTable = gviz_api.DataTable(description)
+    dataTable.LoadData(data)
+    if format == 'JSON':
+        reqId = request.GET.get('reqID',None)
+        response = dataTable.ToJSonResponse(reqId)
+        return HttpResponse(response)
+    else:
+        HttpResponseNotFound()
+
 @login_required
 def delete_event(request, key):
     event = get_own_object_or_404(request.user, Event, key)
