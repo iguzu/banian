@@ -24,7 +24,7 @@
   		}
 		var data = response.getDataTable();
 		var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
-		chart.draw(data, {displayAnnotations: true});
+		chart.draw(data, {displayAnnotations: true,max:{{object.nbr_tickets}}});
 	  }    
     </script>
  <script type="text/javascript">
@@ -102,7 +102,7 @@
   <a class="sexybutton" {%ifnotequal object.first_representation.status "Processing Payment" %}style="display:none"{%endifnotequal%} id="approve-button" href="{% url banian.views.publish key=object.first_representation.key %}"><span><span><span class="accept">Approve</span></span></span></a>
   <a class="sexybutton" {%if not display_cancel %}style="display:none"{%endif%} id="cancel-button" href="{% url banian.views.cancel_representation key=object.first_representation.key %}" ><span><span><span class="cancel">Cancel</span></span></span></a>
   <a class="sexybutton" {%if not display_unpublish %}style="display:none"{%endif%} id="unpublish-button" href="{% url banian.views.unpublish_representation key=object.first_representation.key %}" ><span><span><span class="cancel">Unpublish</span></span></span></a>
-  <a class="sexybutton" {%if not display_doorman%}style="display:none"{%endif%} id="tickets-doorman" href="{% url banian.views.validator_list key=object.key %}"><span><span><span class="group">Doormans</span></span></span></a>
+  <a class="sexybutton" {%if not display_doorman%}style="display:none"{%endif%} id="tickets-doorman" href="{% url banian.views.validator_list key=object.key %}"><span><span><span class="group">Doormen</span></span></span></a>
   <a class="sexybutton" {%ifequal object.first_representation.status "Draft" %}style="display:none"{%endifequal%} id="tickets-button" href="{% url banian.views.seats key=object.first_representation.key %}"><span><span><span class="table">Tickets</span></span></span></a>
  </div>
 {%endif%}
@@ -111,7 +111,8 @@
    <fieldset><legend>Event Details</legend>
          <table>
           <tr><td><strong>Status:</strong></td><td id="status">{{ object.first_representation.status }}</td></tr>
-          <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>          
+          <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>
+          <tr><td><strong>Price:</strong></td><td>{{ object.first_ticket_class.price}}</td></tr>        
           <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
           <tr><td><strong>Date:</strong></td><td>{{ object.first_representation.date|date:"l, F jS Y \a\t P" }}</td></tr>
           <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
@@ -127,7 +128,7 @@
 {%ifnotequal object.first_representation.status "Draft" %}
   <fieldset><legend>Event information</legend>
   <table>
-  <tr><td style="width:125px"><strong>Event Value:</strong></td><td>{%if object.representation_value%}{{object.representation_value|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{%if object.revenues%}{{object.revenues|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}}</td></tr>
+  <tr><td style="width:125px"><strong>Event Value:</strong></td><td>{%if object.representation_value%}{{object.representation_value|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{%if object.revenues%}{{object.revenues|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}} / {{object.nbr_tickets}}</td></tr>
   <tr><td colspan="6"><div id='chart_div' style='width: 700px; height: 240px;'></div></td></tr>
   </table>  
   </fieldset>
