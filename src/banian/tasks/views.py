@@ -347,8 +347,6 @@ def clean_reservation(request):
     logging.info('Task clean_reservation - Start')
     representation = Representation.get(request.POST['representation'])
     reservation = request.POST['reservation']
-    logging.info(repr(representation))
-    logging.info(repr(reservation))
     if representation:
         db.run_in_transaction(unreserve_seats, representation, reservation)
         if not memcache.get(str(representation.key()) + '-ticket_timestamp'): #@UndefinedVariable
@@ -371,6 +369,7 @@ def clean_payment(request):
 
 
 def update_available_tickets(request):
+    logging.info('Task update_available_tickets - Start')
     representation = Representation.get(request.POST['representation'])
     if representation:
         timestamp = memcache.get(str(representation.key()) + '-ticket_timestamp') #@UndefinedVariable
@@ -385,6 +384,7 @@ def update_available_tickets(request):
             representation.put()
         except:
             memcache.set(str(representation.key()) + '-ticket_timestamp',timestamp) #@UndefinedVariable
+    logging.info('Task update_available_tickets - End')
     return HttpResponse()
 
 def update_representation_revenues(request):
@@ -514,7 +514,6 @@ def schedule_close_representations(request):
         except:
             duration = 360
         close_date = representation.date + timedelta(minutes=duration)
-        long_proc_queue = Queue(name='long-term-processing')
         task = Task(url='/tasks/close_representation/', params={'representation':representation.key()},eta=close_date)
         try:
             task.add(queue_name='long-term-processing')
@@ -533,12 +532,44 @@ def schedule_put_on_sales(request):
                                          datetime.utcnow().replace(tzinfo=gaepytz.utc) + timedelta(hours=48),
                                          'Published')
     for event in events: 
-        long_proc_queue = Queue(name='long-term-processing')
         onesaletime = time.mktime(event.onsale_date.timetuple())
         task = Task(url='/tasks/put_on_sale/', params={'event':event.key(),'timestamp':onesaletime,}, eta=event.onsale_date)
-        long_proc_queue.add(task)
+        try:
+            task.add(queue_name='long-term-processing')
+        except UnknownQueueError:
+            ## In test cases the long-term-processing queue doesn't seems to be available. Since the dev server 
+            ## is not running it is concevable that the queue.yaml was not read... not sure. In anycase this a 
+            ## fallback if enqueueing fails with that error.
+            task.add()
     logging.info('schedule_put_on_sales - End') 
     return HttpResponse("Completed") 
+
+
+def update_representation_history(request):
+    logging.info('update_representation_history - Start') 
+    representations = Representation.gql("WHERE timestamp_available < :1 AND status IN :2",
+                                         datetime.utcnow().replace(tzinfo=gaepytz.utc) + timedelta(hours=-24),
+                                         ['Published','On Sale']).fetch(put_limit)
+    to_commit = []
+    for representation in representations: 
+        representation.histo_ticket.append(representation.event.nbr_seats() - representation.available_tickets)
+        representation.histo_time.append(time.time())
+        to_commit.append(representation)
+    db.put(to_commit)
+    if representations.count(put_limit) == put_limit:
+        task = Task(url='/tasks/update_representation_history/', countdown=0)
+        try:
+            task.add(queue_name='long-term-processing')
+        except UnknownQueueError:
+            ## In test cases the long-term-processing queue doesn't seems to be available. Since the dev server 
+            ## is not running it is concevable that the queue.yaml was not read... not sure. In anycase this a 
+            ## fallback if enqueueing fails with that error.
+            task.add()
+    
+    logging.info('update_representation_history - End') 
+    return HttpResponse("Completed") 
+
+
 
 def auto_load(request):
     taskqueue.add(url='/tasks/auto_load/', countdown=60)

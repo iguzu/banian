@@ -8,9 +8,9 @@
 <ul class="prepend-1">
 {% if representation.publishing_cost %}<li> {{representation.publishing_cost|floatformat:2}} $ for publishing {{representation.event.nbr_assigned_seats}} tickets (at 0.01$/ticket).</li>{%endif%}
 {% if representation.commission_cost %}<li>Up to {{representation.commission_cost|floatformat:2}} $ in comission if the event solds out (1% of {{representation.event.representation_value|floatformat:2}} $).</li>{%endif%}</ul>
+</div>
 {%endif%}
 <br>
-</div>
 <form action="" method="post">
 <div>
 <button class="sexybutton" type="submit"  name="create" value="create"><span><span><span class="accept">Confirm</span></span></span></button>

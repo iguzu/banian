@@ -10,7 +10,7 @@ from django.core.urlresolvers import reverse, resolve
 from datetime import datetime, timedelta
 from banian.forms import ValidateLocation
 from google.appengine.ext import db
-from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch, memcache
 from banian.utils import ElementExtracter, handle_images
 from uuid import uuid4
 from google.appengine.api.labs import taskqueue
@@ -254,7 +254,7 @@ def addEvent(testcase,owner,name,date=None,onsale_date=None, endsale_date=None,r
                      owner=owner,
                      location=location)
     v.put()
-    sc = models.SeatConfiguration(name='base',venue=v,owner=owner)
+    sc = models.SeatConfiguration(name='base',venue=v,owner=owner,nbr_seat=nbr_seat)
     sc.put()
     sg = models.SeatGroup(name='',type='Venue',owner=owner,parent=None,seat_configuration=sc,nbr_seat=nbr_seat)
     sg.put()
@@ -2592,7 +2592,60 @@ class CloseRepresentationTestCase(TestCase):
         rep = models.Representation.get(e.first_representation().key())
         self.assertEqual(rep.status,'Sold Out')
         StubPaypal()
-        
+
+class UpdateRepresentationHistoryTestCase(TestCase):
+
+    def setUp(self):
+        logging.debug('UpdateRepresentationHistoryTestCase')
+        StubPaypal()
+        self.user = createUser(self)
+
+    def testNoEvent(self):
+        e = addEvent(self,self.user, 'test', onsale_date=datetime.utcnow().replace(tzinfo=gaepytz.utc),nbr_seat=10)
+        e = publishEvent(self, e)
+        self.assertEqual(len(e.first_representation().histo_ticket),1)
+        self.assertEqual(len(e.first_representation().histo_ticket),1)
+        r= self.client.get(reverse('banian.tasks.views.update_representation_history'))
+        self.assertEqual(r.status_code,200)
+        self.assertEqual(len(e.first_representation().histo_ticket),1)
+        self.assertEqual(len(e.first_representation().histo_ticket),1)
+        buyTickets(self,e.first_representation(),3)
+        e = models.Event.get(e.key())
+        self.assertEqual(len(e.first_representation().histo_ticket),2)
+        self.assertEqual(len(e.first_representation().histo_ticket),2)
+
+    def testEventsModified24hAgo(self):
+        e = addEvent(self,self.user, 'test', onsale_date=datetime.utcnow().replace(tzinfo=gaepytz.utc),nbr_seat=10)
+        e = publishEvent(self, e)
+        representation = e.first_representation()
+        self.assertEqual(len(representation.histo_ticket),1)
+        self.assertEqual(len(representation.histo_ticket),1)
+        representation.timestamp_available = representation.timestamp_available - timedelta(days=1,minutes=2)
+        logging.debug(repr(representation.timestamp_available))
+        memcache.set(str(representation.key()) + '-ticket_sold_timestamp',representation.timestamp_available)
+        representation.put() 
+        r= self.client.get(reverse('banian.tasks.views.update_representation_history'))
+        self.assertEqual(r.status_code,200)
+        representation = db.get(representation.key())
+        self.assertEqual(len(representation.histo_ticket),2)
+        self.assertEqual(len(representation.histo_ticket),2)
+
+
+class SchedulePutOnSalesTestCase(TestCase):
+
+    def setUp(self):
+        logging.debug('SchedulePutOnSalesTestCase')
+        StubPaypal()
+        self.user = createUser(self)
+
+    def testNoEvent(self):
+        r= self.client.get(reverse('banian.tasks.views.schedule_put_on_sales'))
+        self.assertEqual(r.status_code,200)
+
+    def testDoOthers(self):
+        pass
+
+  
 class RegisterLoginTestCase(TestCase):
 
     def setUp(self):
@@ -2628,10 +2681,18 @@ class RepresentationTicketHistoryCase(TestCase):
         self.user = createUser(self)
         self.e = addEvent(self,self.user,'test',nbr_seat=10)
 
-    def testHistory(self):
+    def testBasicHistory(self):
         r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':self.e.first_representation().key()}),follow=True)
         self.assertEqual(r.status_code,200)
         logging.debug(repr(r.content))
         r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':str(self.e.first_representation().key()) + '?format=%s' % 'JavaScript'}),follow=True)
+        self.assertEqual(r.status_code,404)
+        logging.debug(repr(r.content))
+
+    def testBasicHistory(self):
+        r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':self.e.first_representation().key()}),follow=True)
         self.assertEqual(r.status_code,200)
+        logging.debug(repr(r.content))
+        r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':str(self.e.first_representation().key()) + '?format=%s' % 'JavaScript'}),follow=True)
+        self.assertEqual(r.status_code,404)
         logging.debug(repr(r.content))

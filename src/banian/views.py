@@ -153,21 +153,13 @@ def add_event_pro(request):
 
 @login_required
 def representation_ticket_history(request,key):
-    logging.debug(repr('here!'))
-    get_own_object_or_404(request.user, Representation, key)
+    representation = get_own_object_or_404(request.user, Representation, key)
     format = request.GET.get('format','JSON')
     description = { 'date':'date', 'tickets':'number' }
-    data = [ {'date':datetime.now(),'tickets':0},
-            {'date':datetime.now()+timedelta(days=1),'tickets':0},
-            {'date':datetime.now()+timedelta(days=2),'tickets':0},
-            {'date':datetime.now()+timedelta(days=3),'tickets':3},
-            {'date':datetime.now()+timedelta(days=5),'tickets':3},
-            {'date':datetime.now()+timedelta(days=6),'tickets':5},
-            {'date':datetime.now()+timedelta(days=7),'tickets':5},
-            {'date':datetime.now()+timedelta(days=8),'tickets':6},
-            {'date':datetime.now()+timedelta(days=9),'tickets':12},
-            {'date':datetime.now()+timedelta(days=10),'tickets':15},
-            {'date':datetime.now()+timedelta(days=11),'tickets':20}]
+    assert(len(representation.histo_ticket) == len(representation.histo_time))
+    data = []
+    for index,item in enumerate(representation.histo_ticket):
+        data.append({'date':datetime.utcfromtimestamp(representation.histo_time[index]).replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone(representation.event.venue.timezone)),'tickets':item})      
     dataTable = gviz_api.DataTable(description)
     dataTable.LoadData(data)
     if format == 'JSON':
@@ -175,7 +167,7 @@ def representation_ticket_history(request,key):
         response = dataTable.ToJSonResponse(reqId)
         return HttpResponse(response)
     else:
-        HttpResponseNotFound()
+        return HttpResponseNotFound()
 
 @login_required
 def delete_event(request, key):
@@ -722,7 +714,7 @@ def buy_representation(request, key):
                 taskqueue.add(url='/tasks/clean_reservation/', params={'reservation':reservation, 'representation':representation.key()}, countdown=300)
                 taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=300)
                 if not memcache.get(str(representation.key()) + '-ticket_timestamp'): #@UndefinedVariable
-                    taskqueue.add(url='/tasks/update_available_tickets/',params={'representation':representation.key(),}, countdown=10)
+                    taskqueue.add(url='/tasks/update_available_tickets/',params={'representation':representation.key(),}, countdown=30)
                 memcache.set(str(representation.key()) + '-ticket_timestamp',datetime.utcnow().replace(tzinfo=gaepytz.utc)) #@UndefinedVariable
             except:
                 taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=0)

@@ -127,7 +127,7 @@
 {%ifnotequal object.first_representation.status "Draft" %}
   <fieldset><legend>Event information</legend>
   <table>
-  <tr><td style="width:125px"><strong>Total Value:</strong></td><td>{{object.representation_value|floatformat:2}} $</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{{object.revenues|floatformat:2}} $</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}}</td></tr>
+  <tr><td style="width:125px"><strong>Event Value:</strong></td><td>{%if object.representation_value%}{{object.representation_value|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{%if object.revenues%}{{object.revenues|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}}</td></tr>
   <tr><td colspan="6"><div id='chart_div' style='width: 700px; height: 240px;'></div></td></tr>
   </table>  
   </fieldset>

@@ -1,10 +1,14 @@
 cron:
 - description: schedule tasks for closing representation
   url: /tasks/schedule_close_representations
-  schedule: every day 03:00
+  schedule: every day 02:00
   timezone: America/Montreal
 - description: schedule tasks for putting on sale events
   url: /tasks/schedule_put_on_sales
+  schedule: every day 03:00
+  timezone: America/Montreal
+- description: schedule tasks for adding history to on sale representation
+  url: /tasks/update_representation_history
   schedule: every day 04:00
   timezone: America/Montreal
   

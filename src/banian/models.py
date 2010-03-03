@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from google.appengine.ext import db
-from google.appengine.api import images, memcache
+from google.appengine.api import images, memcache, datastore_errors
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_delete
 from google.appengine.ext.db import GqlQuery
@@ -8,6 +8,8 @@ import gaepytz #@UnresolvedImport
 
 from django.utils import simplejson
 from geo.geomodel import GeoModel
+import array
+import time
 google_images = {'jpeg':images.JPEG,'png':images.PNG, 'jpg':images.JPEG }
 
 import banian.model_utils
@@ -22,6 +24,34 @@ offline_mode = False
 commission_rate = 0.01 # 1 percent
 seat_publish_cost = 0.01 # 1 cents
 publishing_free_threshold = 2.00 # 2$ (200 seats)
+
+
+class ArrayProperty(db.Property):
+    def __init__(self, typecode, default=None, **kwargs):
+        self.typecode = typecode
+        if default is None:
+            default = array.array(typecode)
+        super(ArrayProperty, self).__init__(default=default, **kwargs)
+    def validate(self, value):
+        if not isinstance(value, array.array) or value.typecode != self.typecode:
+            raise datastore_errors.BadValueError(
+              "Property %s must be an array instance with typecode %s"
+              % (self.name, self.typecode))
+        value = super(ArrayProperty, self).validate(value)
+        return value
+    
+    def get_value_for_datastore(self, model_instance):
+        value = self.__get__(model_instance, model_instance.__class__)
+        return db.Blob(value.tostring())
+    
+    def make_value_from_datastore(self, value):
+        a = array.array(self.typecode)
+        if value is None: return a
+        a.fromstring(value)
+        return a
+    
+    data_type=db.Blob
+  
 
 class Image(db.Model):
     filename = db.StringProperty(indexed=False) 
@@ -272,7 +302,7 @@ class Event(GeoModel):
 
     def tickets_sold(self):
         if self.status != 'Draft':
-            return self.nbr_seats() - self.nbr_tickets()
+            return self.nbr_tickets() - self.available_tickets()
         else:
             return 0
 
@@ -309,9 +339,6 @@ class Event(GeoModel):
                 self._available_tickets = self._available_tickets + rep.available_tickets
         return self._available_tickets
 
-    def tickets_sold(self):
-        return self.nbr_seats() - self.available_tickets()
-
     def nbr_seats(self):
         if self.seat_configuration:
             return self.seat_configuration.nbr_seat
@@ -347,7 +374,7 @@ class Representation(GeoModel):
     revenues = db.FloatProperty(default=0.0,indexed=False)
     value = db.FloatProperty(default=0.0,indexed=False)
     tc_available = db.TextProperty()
-    timestamp_available = db.DateTimeProperty(indexed=False)
+    timestamp_available = db.DateTimeProperty()
     timestamp_revenues = db.DateTimeProperty(indexed=False)
     last_modified = db.DateTimeProperty(auto_now=True,indexed=False)
     created = db.DateTimeProperty(auto_now_add=True,indexed=False)
@@ -356,6 +383,9 @@ class Representation(GeoModel):
     paypal_id = db.StringProperty(indexed=False)
     timezone = db.StringProperty(indexed=False)
     published_date = db.DateTimeProperty(indexed=False)
+    histo_ticket = ArrayProperty('i')
+    histo_time = ArrayProperty('f')
+    
 
     def __init__(self,*args,**kwargs):
         super(Representation,self).__init__(*args,**kwargs)
@@ -396,6 +426,8 @@ class Representation(GeoModel):
         if not timestamp or not self.timestamp_available or  timestamp > self.timestamp_available:
             self.available_tickets, ticket_class_available = banian.model_utils.calc_representation_available(self)
             self.set_ticketclass_available(ticket_class_available)
+            self.histo_ticket.append(self.nbr_tickets - self.available_tickets)
+            self.histo_time.append(time.time())
             self.timestamp_available = timestamp
 
     def calc_revenues(self,timestamp):
