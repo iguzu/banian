@@ -391,7 +391,10 @@ class SelectTicketForm(Form):
             id += 1
         if total > (self._max_tickets - self._already_purchase_tickets):
             raise ValidationError('Cannot complete the purchase, you attempt to purchase too many tickets')
+        if total == 0:
+            raise ValidationError('Select to purchase at least one ticket')
         return self.cleaned_data
+    
  
 class SelectDistanceForm(Form):
     class Meta:
