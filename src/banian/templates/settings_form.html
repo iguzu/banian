@@ -4,6 +4,7 @@
 <style type="text/css">
  	input[name=address] { width:400px ; }
  	input[name=paypal_id] { width:300px ; }
+ 	input[name=email] { width:300px ; }
  	input[name=name] { width:300px ; }
 </style>
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" >
@@ -56,9 +57,9 @@ var marker = new google.maps.Marker()
 	};
 	geocoder = new google.maps.Geocoder();
 	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-	{%if form.address%}
-	geocode()
-	{%endif%}
+	if (document.getElementById("id_address").value != '') {
+		geocode()
+	}
 	marker.setMap(map)
  }
  	$(document).ready( function() {
@@ -101,6 +102,7 @@ var marker = new google.maps.Marker()
         <table>
         <tr><td><label>Account/Username:</label></td><td>{{username}}</td><td ></td></tr>
          <tr><td><label for="id_name">Name:</label></td><td>{{ form.name }}</td><td ></td></tr>
+         <tr><td><label for="id_email">Email:</label></td><td>{{ form.email }}</td><td ></td></tr>         
          <tr><td><label for="id_paypal_id">Paypal ID:</label></td><td>{{form.paypal_id}}</td><td ></td></tr>
          <tr><td><label for="id_address">Address:</label></td><td>{{ form.address }}<a class="sexybutton" id="id_validate" href=""><span><span><span class="search">Validate</span></span></span></a></td><td ></td></tr>
         <tr><td></td><td>

@@ -34,14 +34,18 @@ class RegistrationForm(forms.Form):
     username = forms.RegexField(regex=r'^\w+$',
                                 max_length=30,
                                 widget=forms.TextInput(attrs=attrs_dict),
-                                label=_(u'username'))
+                                label=_(u'Username'))
     email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
                                                                maxlength=75)),
-                             label=_(u'email address'))
+                             label=_(u'Email Address'))
+    name = forms.RegexField(regex=r'^[^0-9!@#$%\^&*(){}[\]|\\/+=_?><;:`~",.]{6,}$', max_length=40,label=_(u'Name'))
     password1 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
-                                label=_(u'password'))
-    password2 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),label=_(u'password (again)'))
-    paypal_id = forms.EmailField(widget=forms.TextInput(attrs={'maxlength':75,},),label=_(u'paypal_id'))
+                                label=_(u'Password'))
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),label=_(u'Password (again)'))
+    tos = forms.BooleanField(widget=forms.CheckboxInput(attrs=attrs_dict),
+                             label=_(u'I have read and agree to the Terms of Service'),
+                             error_messages={ 'required': u"You must agree to the terms to register" })
+
     def clean_username(self):
         """
         Validate that the username is alphanumeric and is not already
@@ -77,7 +81,7 @@ class RegistrationForm(forms.Form):
         new_user = RegistrationProfile.objects.create_inactive_user(username=self.cleaned_data['username'],
                                                                     password=self.cleaned_data['password1'],
                                                                     email=self.cleaned_data['email'],
-                                                                    address=self.cleaned_data['address'],
+                                                                    name=self.cleaned_data['name'],
                                                                     domain_override=domain_override,
                                                                     )
         return new_user
@@ -92,13 +96,26 @@ class UserRegistrationForm(forms.ModelForm):
         exclude.extend(['first_name','last_name','email'])
     
     
-    username = forms.EmailField(widget=forms.TextInput(attrs=dict(maxlength=75)), label=_(u'E-mail'))
+    username = forms.EmailField(widget=forms.TextInput(attrs=dict(maxlength=75)), label=_(u'E-mail',))
     name = forms.RegexField(regex=r'^[^0-9!@#$%\^&*(){}[\]|\\/+=_?><;:`~",.]{6,}$', max_length=40,label=_(u'Name'))
     password1 = forms.CharField(widget=forms.PasswordInput(render_value=False), label=_(u'Password'))
     password2 = forms.CharField(widget=forms.PasswordInput(render_value=False), label=_(u'Password (again)'))
     tos = forms.BooleanField(widget=forms.CheckboxInput(attrs=attrs_dict),
                              label=_(u'I have read and agree to the Terms of Service'),
                              error_messages={ 'required': u"You must agree to the terms to register" })
+
+    def clean_email(self):
+        """
+        Validate that the supplied email address is unique for the
+        site.
+        
+        """
+        email = self.cleaned_data['email'].lower()
+        if User.all().filter('email =', email).count(1):
+            raise forms.ValidationError(_(u'This email address is already in use. Please supply a different email address.'))
+        return email
+
+    
     def clean_username(self):
         """
         Validate that the username is alphanumeric and is not already
@@ -140,6 +157,7 @@ class UserRegistrationForm(forms.ModelForm):
             password=self.cleaned_data['password1'],
             name=self.cleaned_data['name'],
             email=self.cleaned_data['username'],
+            paypal_id=self.cleaned_data['paypal_id'],
             domain_override=domain_override)
         self.instance = new_user
         return super(UserRegistrationForm, self).save()

@@ -9,7 +9,8 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.contrib.auth.decorators import login_required
-from registration.forms import UserRegistrationForm, UserAuthenticationForm
+from registration.forms import UserRegistrationForm, UserAuthenticationForm,\
+    RegistrationForm
 from django.contrib.auth.forms import PasswordChangeForm
 from registration.models import RegistrationProfile
 from recaptcha.client import captcha
@@ -81,7 +82,7 @@ def activate(request, activation_key,
 
 
 def register(request, success_url=None,
-             form_class=UserRegistrationForm,
+             form_class=RegistrationForm,
              template_name='registration/registration_form.html',
              extra_context=None):
     """

@@ -22,7 +22,7 @@ from django.contrib.auth.models import User
 import banian.paypal
 from geo.geotypes import Box
 from recaptcha.client import captcha
-from registration.forms import UserRegistrationForm
+from registration.forms import RegistrationForm
 from banian.models import Venue, Event, TicketClass, Seat, Image, Representation, fetch_limit,\
                           Ticket, Transaction, UserEvent, max_ticket_limit,\
     TicketScan
@@ -48,7 +48,7 @@ def default(request):
     t = loader.get_template('main.html')
     chtml = captcha.displayhtml(public_key="6LcoxQcAAAAAAHdG6W6ojYccJckkkMLg5myaLUw9", use_ssl=False, error=None)
     c = RequestContext(request)
-    c['form'] = UserRegistrationForm()
+    c['form'] = RegistrationForm()
     c['captchahtml'] = chtml
     return HttpResponse(t.render(c))
 

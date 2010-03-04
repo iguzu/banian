@@ -202,12 +202,13 @@ class SettingsForm(ModelForm):
     _verbose_name = 'Account Settings'
     time_format = ChoiceField(choices=((1,'am/pm'),(2,'24h')),initial=1)
     name = CharField(required=False)
+    email = EmailField()
     address = CharField(required=False)
     paypal_id = EmailField(required=False)        
 
     class Meta:
         model = User
-        fields = ['name','address','paypal_id','country','distance_units','time_format',]
+        fields = ['name','address','email','paypal_id','country','distance_units','time_format',]
     
     def clean(self):
         address = self.cleaned_data.get('address')
@@ -230,6 +231,7 @@ class SettingsForm(ModelForm):
             self.instance.addressname = self.cleaned_data['addressname']
             self.instance.short_addressname = self.cleaned_data['short_addressname']
             self.instance.name = self.cleaned_data['name']
+            self.instance.email = self.cleaned_data['email']
             self.instance.country = self.cleaned_data['country']
             if self.cleaned_data['latitude'] and self.cleaned_data['longitude']:
                 self.instance.location = db.GeoPt(self.cleaned_data['latitude'],self.cleaned_data['longitude'])
