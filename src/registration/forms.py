@@ -33,15 +33,16 @@ class RegistrationForm(forms.Form):
     """
     username = forms.RegexField(regex=r'^\w+$',
                                 max_length=30,
+                                min_length=5,
                                 widget=forms.TextInput(attrs=attrs_dict),
-                                label=_(u'Username'))
+                                label=_(u'Username'),help_text="(at least 5 characters required)")
     email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
                                                                maxlength=75)),
                              label=_(u'Email Address'))
-    name = forms.RegexField(regex=r'^[^0-9!@#$%\^&*(){}[\]|\\/+=_?><;:`~",.]{6,}$', max_length=40,label=_(u'Name'))
+    name = forms.RegexField(regex=r'^[^0-9!@#$%\^&*(){}[\]|\\/+=_?><;:`~",.]{3,}$', max_length=40,label=_(u'Name'),help_text="(at least 3 characters required)")
     password1 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
-                                label=_(u'Password'))
-    password2 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),label=_(u'Password (again)'))
+                                label=_(u'Password'),help_text="(at least 3 characters required)")
+    password2 = forms.CharField(min_length=5,widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),label=_(u'Password (again)'))
     tos = forms.BooleanField(widget=forms.CheckboxInput(attrs=attrs_dict),
                              label=_(u'I have read and agree to the Terms of Service'),
                              error_messages={ 'required': u"You must agree to the terms to register" })
@@ -57,6 +58,18 @@ class RegistrationForm(forms.Form):
             raise forms.ValidationError(_(u'This username is already taken. Please choose another.'))
         return self.cleaned_data['username']
         
+    def clean_email(self):
+        """
+        Validate that the supplied email address is unique for the
+        site.
+        
+        """
+        email = self.cleaned_data['email'].lower()
+        if User.all().filter('email =', email).count(1):
+            raise forms.ValidationError(_(u'This email address is already in use. Please supply a different email address.'))
+        return email
+
+
 
     def clean(self):
         """
@@ -85,82 +98,6 @@ class RegistrationForm(forms.Form):
                                                                     domain_override=domain_override,
                                                                     )
         return new_user
-
-
-
-
-class UserRegistrationForm(forms.ModelForm):
-    class Meta:
-        model = User
-        exclude = UserTraits.properties().keys()
-        exclude.extend(['first_name','last_name','email'])
-    
-    
-    username = forms.EmailField(widget=forms.TextInput(attrs=dict(maxlength=75)), label=_(u'E-mail',))
-    name = forms.RegexField(regex=r'^[^0-9!@#$%\^&*(){}[\]|\\/+=_?><;:`~",.]{6,}$', max_length=40,label=_(u'Name'))
-    password1 = forms.CharField(widget=forms.PasswordInput(render_value=False), label=_(u'Password'))
-    password2 = forms.CharField(widget=forms.PasswordInput(render_value=False), label=_(u'Password (again)'))
-    tos = forms.BooleanField(widget=forms.CheckboxInput(attrs=attrs_dict),
-                             label=_(u'I have read and agree to the Terms of Service'),
-                             error_messages={ 'required': u"You must agree to the terms to register" })
-
-    def clean_email(self):
-        """
-        Validate that the supplied email address is unique for the
-        site.
-        
-        """
-        email = self.cleaned_data['email'].lower()
-        if User.all().filter('email =', email).count(1):
-            raise forms.ValidationError(_(u'This email address is already in use. Please supply a different email address.'))
-        return email
-
-    
-    def clean_username(self):
-        """
-        Validate that the username is alphanumeric and is not already
-        in use.
-        
-        """
-        user = User.get_by_key_name("key_"+self.cleaned_data['username'].lower())
-        if user and user.is_active:
-            raise forms.ValidationError(__(u'This username is already taken. Please choose another.'))
-        return self.cleaned_data['username']
-
-    def clean(self):
-        """
-        Verifiy that the values entered into the two password fields
-        match. Note that an error here will end up in
-        ``non_field_errors()`` because it doesn't apply to a single
-        field.
-        
-        """
-        if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
-            if self.cleaned_data['password1'] != self.cleaned_data['password2']:
-                raise forms.ValidationError(__(u'You must type the same password each time'))
-        return self.cleaned_data
-    
-    def save(self, domain_override=""):
-        """
-        Create the new ``User`` and ``RegistrationProfile``, and
-        returns the ``User``.
-        
-        This is essentially a light wrapper around
-        ``RegistrationProfile.objects.create_inactive_user()``,
-        feeding it the form data and a profile callback (see the
-        documentation on ``create_inactive_user()`` for details) if
-        supplied.
-        
-        """
-        new_user = RegistrationProfile.objects.create_inactive_user(
-            username=self.cleaned_data['username'],
-            password=self.cleaned_data['password1'],
-            name=self.cleaned_data['name'],
-            email=self.cleaned_data['username'],
-            paypal_id=self.cleaned_data['paypal_id'],
-            domain_override=domain_override)
-        self.instance = new_user
-        return super(UserRegistrationForm, self).save()
 
 
 

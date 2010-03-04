@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
-
+{% block extra-head %}
+<style type="text/css">
+ 	input[name=email],input[name=name] { width:300px ; }
+</style>
+{% endblock extra-head %}
 {% block content %}
 <h2>Setup your Iguzu account</h2>
 {% if form.errors %}<div class="error">{% else %}{% if captchaerror %}<div class="error">{% endif %}{% endif %}
@@ -9,15 +13,15 @@
 {% if form.errors %}</div>{% else %}{% if captchaerror %}</div>{% endif %}{% endif %}
 
 <form action="{{ request.path }}" method="post">
-    <div class="span-15 last">
+    <div class="span-18 last">
     <fieldset><legend>Register</legend>
     <fieldset><legend>Account information</legend>
     <table>
         <tbody>
-            <tr><td><label for="{{ form.username.id }}">{{ form.username.label }}:</label></td><td > {{ form.username }}</td></tr>
-            <tr><td><label for="{{ form.name.id }}">{{ form.name.label }}:</label></td><td > {{ form.name }}</td></tr>
+            <tr><td><label for="{{ form.username.id }}">{{ form.username.label }}:</label></td><td > {{ form.username }} {{form.username.help_text}}</td></tr>
+            <tr><td><label for="{{ form.name.id }}">{{ form.name.label }}:</label></td><td > {{ form.name }} {{form.name.help_text}}</td></tr>
             <tr><td><label for="{{ form.email.id }}">{{ form.email.label }}:</label></td><td > {{ form.email }}</td></tr>
-            <tr><td><label for="{{ form.password1.id }}">{{ form.password1.label }}:</label></td><td > {{ form.password1 }}</td></tr>
+            <tr><td><label for="{{ form.password1.id }}">{{ form.password1.label }}:</label></td><td > {{ form.password1 }} {{form.password1.help_text}}</td></tr>
             <tr><td><label for="{{ form.password2.id }}">{{ form.password2.label }}:</label></td><td > {{ form.password2 }}</td></tr>
             <tr><td colspan="2"><label>Word verification:</label></td>
             <tr>
