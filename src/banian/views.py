@@ -911,7 +911,7 @@ def preview_ticket(request,key):
 def validation_list(request):
     now_minus_48 = datetime.utcnow().replace(tzinfo=gaepytz.utc) + timedelta(hours=48)
     
-    event_list = Event.gql("WHERE firstdate < :1 AND validators =:2",now_minus_48,request.user)
+    event_list = Event.gql("WHERE firstdate < :1 AND visibility = :2 AND validators =:3",now_minus_48,'Published',request.user)
     return object_list(request, event_list,template_name='banian/validation_list.html',template_object_name='event', extra_context={'read_only':True,})
 
 

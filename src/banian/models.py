@@ -210,7 +210,9 @@ class Event(GeoModel):
         ordering = ['name']
 
     def mutable(self):
-        status = self.first_representation().status
+        status = None
+        if self.first_representation():
+            status = self.first_representation()
         if status == 'Published' or status == 'On sales' or status == 'Sold Out' or status == 'Cancelled':
             return False
         else:

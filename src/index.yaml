@@ -31,13 +31,13 @@ indexes:
   properties:
   - name: location_geocells
   - name: private
-  - name: status
+  - name: visibility
   - name: firstdate
 
 - kind: banian_event
   properties:
   - name: location_geocells
-  - name: status
+  - name: visibility
   - name: firstdate
 
 - kind: banian_event
@@ -48,8 +48,13 @@ indexes:
 
 - kind: banian_event
   properties:
-  - name: status
   - name: validators
+  - name: firstdate
+
+- kind: banian_event
+  properties:
+  - name: validators
+  - name: visibility
   - name: firstdate
 
 - kind: banian_representation

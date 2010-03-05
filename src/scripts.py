@@ -20,5 +20,11 @@ from banian import models
 from google.appengine.ext import db
 
 events = models.Event.all().fetch(500)
-db.put(events)
+for e in events:
+    if e.first_representation() != 'Draft':
+        e.visibility = 'Published'
+    else:
+        e.visibility = 'Draft'
+    e.private = False
+    e.put()
 
