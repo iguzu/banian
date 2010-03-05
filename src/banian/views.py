@@ -535,7 +535,7 @@ def search_events(request):
         user_loc = ((request.user.location.lon, 0, 0), (request.user.location.lat, 0, 0))
         # add a little more to the distance due to the imprecision of the technique and then remove the results that exeeeds manually
         west, south, east, north = location_window(request.user.location.lat, request.user.location.lon, distance+2, 'km')
-        event_list = Event.bounding_box_fetch(Event.all().filter('firstdate >', datetime.utcnow().replace(tzinfo=gaepytz.utc)).filter('status =', 'Published').order('firstdate'),
+        event_list = Event.bounding_box_fetch(Event.all().filter('firstdate >', datetime.utcnow().replace(tzinfo=gaepytz.utc)).filter('status =', 'Published').filter('private =',False).order('firstdate'),
                                           Box(north, east, south, west), max_results=fetch_limit,)
         for index, item in enumerate(event_list):
             venue_loc = ((item.venue.location.lon, 0, 0), (item.venue.location.lat, 0, 0))

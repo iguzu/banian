@@ -30,6 +30,13 @@ indexes:
 - kind: banian_event
   properties:
   - name: location_geocells
+  - name: private
+  - name: status
+  - name: firstdate
+
+- kind: banian_event
+  properties:
+  - name: location_geocells
   - name: status
   - name: firstdate
 

@@ -202,6 +202,7 @@ class Event(GeoModel):
     restrict_sale_period = db.BooleanProperty(indexed=False)
     validators = db.ListProperty(db.Key)
     limit_duration = db.BooleanProperty(indexed=False,default=False)
+    private = db.BooleanProperty(default=False)
 
     def __unicode__(self):
         return '%s - %s' % (self.key(),self.name)

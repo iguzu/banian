@@ -615,6 +615,7 @@ class QEOptionsForm(ModelForm):
     cancel_fees = FloatField(required=False,initial=30)
     cancel_delay = IntegerField(required=False,initial=7,label='Cancellation period runs out')
     restrict_sale_period = BooleanField(required=False)
+    private = BooleanField(required=False,label='Make this event private (not searchable)')
     onsale_time = TimeField(required=False)
     onsale_date = DateField(required=False)
     endsale_time = TimeField(required=False)
@@ -656,6 +657,7 @@ class QEOptionsForm(ModelForm):
         if 'endsale_date' in self.changed_data or 'endsale_time' in self.changed_data :    
             self.instance.endsale_date = self.cleaned_data['endsale_date']
         self.instance.restrict_sale_period =  self.cleaned_data['restrict_sale_period']
+        self.instance.private = self.cleaned_data['private']
         self.instance.put()        
         return self.instance
 

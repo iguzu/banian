@@ -201,7 +201,7 @@ def publishEvent(testcase,event,do_run_tasks=True):
 def addEvent(testcase,owner,name,date=None,onsale_date=None, endsale_date=None,restrict_sale_period=None,
              address=None,timezone=None, venue_name=None,thumbnail=None,poster=None,
              nbr_seat=None,web_site=None,email=None,force_no_image=False,price=None,
-             general_admission=None,door_open=None,note=None,max_step=None):
+             general_admission=None,door_open=None,note=None,max_step=None,private=False):
 
     class _obj(object):
         files = {}
@@ -273,7 +273,8 @@ def addEvent(testcase,owner,name,date=None,onsale_date=None, endsale_date=None,r
                      door_open=door_open,
                      note=note,
                      max_step=max_step,
-                     validators= [owner.key()])
+                     validators= [owner.key()],
+                     private=private)
     handle_images(form,e)
     e.put()
     tc = models.TicketClass(name='',owner=owner, event=e,price=price,general_admission=general_admission)
@@ -874,6 +875,31 @@ class SearchEventTestCase(TestCase):
             elif isinstance(r.context,list) and 'form' in r.context[0]:
                 self.assertEqual(len(r.context[0]['event_list']),1)
         MarkupValidation(self,r.content)
+
+    def testSearchPrivateEvent(self):
+        e= addEvent(self,self.user,'Test Event',nbr_seat=10,private=True)
+        e= publishEvent(self,e)
+        r = self.client.get(reverse('banian.views.search_events'))
+        self.assertNotContains(r,e.name, 200)
+        if r.context:
+            if isinstance(r.context,dict) and 'form' in r.context:
+                self.assertEqual(len(r.context['event_list']),0)
+            elif isinstance(r.context,list) and 'form' in r.context[0]:
+                self.assertEqual(len(r.context[0]['event_list']),0)
+        MarkupValidation(self,r.content)
+
+
+    def testSearchNoEvent(self):
+        r = self.client.get(reverse('banian.views.search_events'))
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r,"No event match your search criteria")
+        if r.context:
+            if isinstance(r.context,dict) and 'form' in r.context:
+                self.assertEqual(len(r.context['event_list']),0)
+            elif isinstance(r.context,list) and 'form' in r.context[0]:
+                self.assertEqual(len(r.context[0]['event_list']),0)
+        MarkupValidation(self,r.content)
+
 
     def testSearchOneEventNoImage(self):
         e= addEvent(self,self.user,str(uuid4()),nbr_seat=10,force_no_image=True)
