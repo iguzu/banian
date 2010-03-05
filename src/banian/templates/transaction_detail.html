@@ -29,7 +29,7 @@
  </script>
  {% endblock %}
 {% block content-leftpane %}
-{% if new %}<div class="notice">Thank you for making your purchase via Iguzu. Your order has been placed and your tickets will be generated within few minutes.<br>A copy of this order will be sent shorty by email at {{ object.owner.username }}.</div>{%endif%}
+{% if new %}<div class="notice">Thank you for making your purchase via Iguzu. Your order has been placed and your tickets will be generated within few minutes.<br>A copy of this order will be sent shorty by email at {{ object.owner.email }}.</div>{%endif%}
   <fieldset><legend class="title">Ticket {{object.type}} -- {{object.date|date:"M jS Y G:i:s"}}</legend>
    <div style="text-align:right">
 {%ifequal object.payment_status "Processing" %}<a class="sexybutton" href="{{paypal_transfer_url}}"><span><span><span class="accept">Approve</span></span></span></a>{%endifequal%}
