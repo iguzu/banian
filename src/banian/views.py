@@ -90,68 +90,6 @@ def show_event(request, key):
     return object_detail(request, Event.all(), key, extra_context=context)    
 
 @login_required
-def edit_event_pro(request, key):
-    event = get_own_object_or_404(request.user, Event, key)
-    venue = get_own_object_or_404(request.user, Venue, event.venue.key())
-    first_representation = Representation.all().filter('event =',event).order('date').get()
-    max_onsale_date = None
-    if first_representation:
-        max_onsale_date = first_representation.date+timedelta(days=-1)
-    seat_configurations = []
-    for seat_configuration in venue.seatconfiguration_set.order('name'):
-        seat_configurations.append((seat_configuration.key(), seat_configuration.name))
-    timezone = ''
-    for item in construct_timezone_choice(venue.country):
-        if item[0] == venue.timezone:
-            if len(item) == 2:
-                timezone = item[1]
-            else:
-                timezone = item[2]
-
-    return update_object(request, object_id=key,
-                         form_class=EventForm,
-                         form_kwargs={'owner':request.user, 'venue':venue, 'choices':seat_configurations,
-                                      'max_onsale_date':max_onsale_date,},
-                         extra_context={ 'venue_key':venue.key(),'timezone':timezone, },
-                         post_save_redirect=reverse('banian.views.show_event', kwargs=dict(key='%(key)s')))
-
-@login_required
-def add_event_pro(request):
-    if 'venue' not in request.GET:
-        venues = Venue.all().filter('owner =', request.user)
-        if  venues.count() == 0:
-            t = loader.get_template("banian/venue_confirm_creation.html")
-            c = RequestContext(request, {'redirect':reverse('banian.views.add_event')})
-            return HttpResponse(t.render(c))
-        elif venues.count() == 1:
-            venue = venues.get()
-            return HttpResponseRedirect(reverse('banian.views.add_event') + '?venue=' + str(venue.key()))
-        elif venues.count() > 1:
-            url = reverse('banian.views.select_venue') + '?redirect=' + reverse('banian.views.add_event')
-            return HttpResponseRedirect(url)
-    else:
-        if request.method == 'POST':
-            pass
-        venue = get_own_object_or_404(request.user, Venue, request.GET['venue'])
-        timezone = ''
-        for item in construct_timezone_choice(venue.country):
-            if item[0] == venue.timezone:
-                if len(item) == 2:
-                    timezone = item[1]
-                else:
-                    timezone = item[2]
-        seat_configurations = []
-        for seat_configuration in venue.seatconfiguration_set.order('name'):
-            seat_configurations.append((seat_configuration.key(), seat_configuration.name))
-        initial = {'cancel_delay':7, 'door_open':120.0, 'duration':0.0, 'cancel_fees':30.0}
-        return create_object(request,
-                             form_class=EventForm,
-                             post_save_redirect=reverse('banian.views.show_event', kwargs=dict(key='%(key)s')),
-                             extra_context={'venue_key':venue.key(),'timezone':timezone},
-                             form_kwargs={'owner':request.user, 'venue':venue,
-                                          'choices':seat_configurations, 'initial':initial,})  
-
-@login_required
 def representation_ticket_history(request,key):
     representation = get_own_object_or_404(request.user, Representation, key)
     format = request.GET.get('format','JSON')
