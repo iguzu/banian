@@ -2,6 +2,7 @@
 from banian.models import Event, TicketClass, Representation, SeatConfiguration,\
     Venue
 from django.forms.models import ModelForm
+from django import forms
 from django.forms.forms import Form, ValidationError
 from django.forms.fields import ChoiceField, CharField, FileField, MultipleChoiceField, DateField, TimeField, IntegerField, URLField,\
     BooleanField, EmailField, FloatField
@@ -209,7 +210,19 @@ class SettingsForm(ModelForm):
     class Meta:
         model = User
         fields = ['name','address','email','paypal_id','country','distance_units','time_format',]
-    
+
+    def clean_email(self):
+        """
+        Validate that the supplied email address is unique for the
+        site.
+        
+        """
+        email = self.cleaned_data['email'].lower()
+        if User.all().filter('email =', email).count(1):
+            raise forms.ValidationError(_(u'This email address is already in use. Please supply a different email address.'))
+        return email
+
+
     def clean(self):
         address = self.cleaned_data.get('address')
         if address:

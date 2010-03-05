@@ -83,14 +83,16 @@ def UnStubUrlFetch():
         google_urlfetch = None
 
 
-def createUser(testcase,username=None,password=None,name=None,paypal_id=None, address=None,login=True):
-        username = username or 'sbl@iguzu.com'
+def createUser(testcase,username=None,password=None,name=None,paypal_id=None, email=None,address=None,login=True):
+        username = username or 'sbl'
         password = password or 'secret'
         paypal_id = paypal_id or 'seller_1259638970_biz@iguzu.com'
         name = name or 'SBL'
-        user = User.objects.create_user(username, username, password) #@UndefinedVariable
+        email = email or 'toto@titi.com'
+        user = User.objects.create_user(username, email, password) #@UndefinedVariable
         user.is_staff = True
         user.name = name
+        
         if not address:
             user.address = '2855 Rue Centre, app 212, Montreal, Quebec, Canada'
             user.location =  db.GeoPt(45.476454,-73.572827)
@@ -1729,7 +1731,7 @@ class AccountSettingsTestCase(TestCase):
 
     def testSetName(self):
         name = 'SBL'
-        r = self.client.post(reverse('banian.views.settings'),{'name':name,'time_format':1},follow=True)
+        r = self.client.post(reverse('banian.views.settings'),{'name':name,'time_format':1,'email':'test@gmail.com'},follow=True)
         self.assertEqual(r.status_code,200)
         formValidation(self, r)
         u = models.User.get(self.user.key()) #@UndefinedVariable
@@ -1738,7 +1740,7 @@ class AccountSettingsTestCase(TestCase):
 
     def testSetAddress(self):
         address = '2855 rue centre, montreal'
-        r = self.client.post(reverse('banian.views.settings'),{'address':address,'time_format':1},follow=True)
+        r = self.client.post(reverse('banian.views.settings'),{'address':address,'time_format':1,'email':'test@gmail.com'},follow=True)
         self.assertEqual(r.status_code,200)
         formValidation(self, r)
         u = models.User.get(self.user.key()) #@UndefinedVariable
@@ -1747,7 +1749,7 @@ class AccountSettingsTestCase(TestCase):
 
     def testSetPaypalID(self):
         paypal_id = 'seller_1259638970_biz@iguzu.com'
-        r = self.client.post(reverse('banian.views.settings'),{'paypal_id':paypal_id,'time_format':1},follow=True)
+        r = self.client.post(reverse('banian.views.settings'),{'paypal_id':paypal_id,'time_format':1,'email':'test@gmail.com'},follow=True)
         self.assertEqual(r.status_code,200)
         formValidation(self, r)
         u = models.User.get(self.user.key()) #@UndefinedVariable
@@ -1756,11 +1758,38 @@ class AccountSettingsTestCase(TestCase):
 
     def testSetTimeFormat(self):
         time_format = 2
-        r = self.client.post(reverse('banian.views.settings'),{'time_format':2},follow=True)
+        r = self.client.post(reverse('banian.views.settings'),{'time_format':time_format,'email':'test@gmail.com'},follow=True)
         self.assertEqual(r.status_code,200)
         formValidation(self, r)
         u = models.User.get(self.user.key()) #@UndefinedVariable
         self.assertEqual(u.time_format,time_format)
+
+    def testSetEmail(self):
+        email = 'test@gmail.com'
+        r = self.client.post(reverse('banian.views.settings'),{'time_format':2,'email':email},follow=True)
+        self.assertEqual(r.status_code,200)
+        formValidation(self, r)
+        u = models.User.get(self.user.key()) #@UndefinedVariable
+        self.assertEqual(u.email,email)
+
+    def testExistingEmail(self):
+        createUser(self, 'toto', 'secret', email='test@gmail.com', login=False)
+        email = 'test@gmail.com'
+        r = self.client.post(reverse('banian.views.settings'),{'time_format':2,'email':email},follow=True)
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r, 'This email address is already in use')
+        u = models.User.get(self.user.key()) #@UndefinedVariable
+        self.assertNotEqual(u.email,email)
+        MarkupValidation(self,r.content)
+        
+    def testInvalidEmail(self):
+        email = 'tata'
+        r = self.client.post(reverse('banian.views.settings'),{'time_format':2,'email':email},follow=True)
+        self.assertEqual(r.status_code,200)
+        self.assertContains(r, 'Enter a valid e-mail address')
+        u = models.User.get(self.user.key()) #@UndefinedVariable
+        self.assertNotEqual(u.email,email)
+        MarkupValidation(self,r.content)
 
     def testSetInvalidAddress(self):
         address = 'tata'

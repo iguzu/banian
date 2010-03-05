@@ -14,15 +14,11 @@ while(seats):
 
 
 
-## Add Property to event
+## Add new properties on existing entities (property default)
 
 from banian import models
 from google.appengine.ext import db
 
 events = models.Event.all().fetch(500)
-to_update = []
-for event in events:
-    event.private = False
-    to_update.append(event)
-db.put(to_update)
+db.put(events)
 
