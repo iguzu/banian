@@ -124,7 +124,7 @@ def put_on_sale(request):
     logging.info('Task put_on_sale - Start')
     event = Event.get(request.POST['event'])
     logging.info(repr(event))
-    if event.status == 'Published' or event.status == 'On Sale':
+    if event.visibility == 'Published':
         onsale_date = datetime.utcfromtimestamp(float(request.POST['timestamp']),).replace(tzinfo=gaepytz.utc)
         if not event or onsale_date != event.onsale_date:
             logging.info('Task put_on_sale - Nothing to do')
@@ -136,9 +136,6 @@ def put_on_sale(request):
         while (len(representations[slice:slice + put_limit])):
             db.put(representations[slice:slice + put_limit])
             slice = slice + put_limit
-        #TODO: put that back once geomodel supports GQL
-        #event.status = 'On Sale'
-        #event.put()
     logging.info('Task put_on_sale - Completed')    
     return HttpResponse("Completed")
 
@@ -528,7 +525,7 @@ def schedule_close_representations(request):
 
 def schedule_put_on_sales(request):
     logging.info('schedule_put_on_sales - Start') 
-    events = Event.gql("WHERE onsale_date < :1 AND status = :2",
+    events = Event.gql("WHERE onsale_date < :1 AND visibility = :2",
                                          datetime.utcnow().replace(tzinfo=gaepytz.utc) + timedelta(hours=48),
                                          'Published')
     for event in events: 

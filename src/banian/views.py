@@ -180,7 +180,7 @@ def delete_event(request, key):
 
 def view_event(request, key):
     event = get_object_or_404(Event, key)
-    if event.status == 'Draft':
+    if event.visibility == 'Draft':
         return HttpResponseNotFound()
     rep_list = Representation.gql("WHERE event = :1 AND status IN :2 ORDER BY date", event, ['Published', 'Sold Out', 'On Sale','Sale Closed']).fetch(fetch_limit)
     extra = {'representation_set':rep_list,}
@@ -267,7 +267,7 @@ def image(request, key):
 @login_required
 def add_class(request):
     event = get_own_object_or_404(request.user, Event, request.GET['event'])
-    if event.status == 'Published':
+    if not event.mutable():
         return HttpResponseForbidden("Ticket Class cannot be modified after seats were created")
     if not event.seat_configuration:
         url = reverse('banian.views.select_seat_config') + '?event=%s' % event.key()
@@ -303,7 +303,7 @@ def show_class(request, key):
 def edit_class(request, key):
     ticket_class = get_own_object_or_404(request.user, TicketClass, key)
     event = get_own_object_or_404(request.user, Event, ticket_class.event.key())
-    if event.status == 'Published':
+    if not event.mutable():
         return HttpResponseForbidden("Ticket Class cannot be modified after seats were created")
     event_key = ticket_class.event.key()
     if ticket_class.event.seat_configuration:
@@ -321,7 +321,7 @@ def edit_class(request, key):
 def delete_class(request, key):
     ticket_class = get_own_object_or_404(request.user, TicketClass, key)
     event = get_own_object_or_404(request.user, Event, ticket_class.event.key())
-    if event.status == 'Published':
+    if not event.mutable():
         return HttpResponseForbidden("Ticket Class cannot be modified after seats were created")
 
     if ticket_class.owner != request.user:
@@ -442,8 +442,8 @@ def publish(request, key):
         representation.status = 'Generating'
         representation.job_id = job_id
         representation.put()
-        if event.status == 'Draft':
-            event.status = 'Published'
+        if event.visibility == 'Draft':
+            event.visibility = 'Published'
             event.put()
         ticket_class = TicketClass.gql("WHERE event=:1 ORDER BY __key__", event).get()
         seat_group = ticket_class.seat_groups[0]
@@ -535,7 +535,7 @@ def search_events(request):
         user_loc = ((request.user.location.lon, 0, 0), (request.user.location.lat, 0, 0))
         # add a little more to the distance due to the imprecision of the technique and then remove the results that exeeeds manually
         west, south, east, north = location_window(request.user.location.lat, request.user.location.lon, distance+2, 'km')
-        event_list = Event.bounding_box_fetch(Event.all().filter('firstdate >', datetime.utcnow().replace(tzinfo=gaepytz.utc)).filter('status =', 'Published').filter('private =',False).order('firstdate'),
+        event_list = Event.bounding_box_fetch(Event.all().filter('firstdate >', datetime.utcnow().replace(tzinfo=gaepytz.utc)).filter('visibility =', 'Published').filter('private =',False).order('firstdate'),
                                           Box(north, east, south, west), max_results=fetch_limit,)
         for index, item in enumerate(event_list):
             venue_loc = ((item.venue.location.lon, 0, 0), (item.venue.location.lat, 0, 0))
@@ -629,8 +629,6 @@ def cancel_representation(request,key):
     representation = get_object_or_404(Representation, key)
     event = get_own_object_or_404(request.user, Event, representation.event.key())
     if request.method == 'POST':
-        event.status = 'Cancelled'
-        event.put()
         representation.status = 'Cancelled'
         representation.put()
         Message(user=request.user, message=ugettext("Event has been cancelled")).put()
@@ -975,7 +973,7 @@ def preview_ticket(request,key):
 def validation_list(request):
     now_minus_48 = datetime.utcnow().replace(tzinfo=gaepytz.utc) + timedelta(hours=48)
     
-    event_list = Event.gql("WHERE firstdate < :1 AND status IN :2 AND validators =:3",now_minus_48,['Published','Sold Out','On Sale'],request.user)
+    event_list = Event.gql("WHERE firstdate < :1 AND validators =:2",now_minus_48,request.user)
     return object_list(request, event_list,template_name='banian/validation_list.html',template_object_name='event', extra_context={'read_only':True,})
 
 

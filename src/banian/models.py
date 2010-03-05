@@ -176,7 +176,7 @@ class Event(GeoModel):
     name = db.StringProperty()
     performer = db.StringProperty()
     description = db.TextProperty()
-    status = db.StringProperty(default='Draft', choices=set(['Draft', 'Published','Sold Out','On Sale','Completed','Cancelled']))
+    visibility = db.StringProperty(default='Draft', choices=set(['Draft', 'Published']))
     quick = db.BooleanProperty()
     max_step = db.IntegerProperty(indexed=False,default=-1)
     venue = db.ReferenceProperty(Venue, required=True)
@@ -210,7 +210,8 @@ class Event(GeoModel):
         ordering = ['name']
 
     def mutable(self):
-        if self.status == 'Published' or self.status == 'On sales' or self.status == 'Sold Out' or self.status == 'Cancelled':
+        status = self.first_representation().status
+        if status == 'Published' or status == 'On sales' or status == 'Sold Out' or status == 'Cancelled':
             return False
         else:
             return True
@@ -302,10 +303,7 @@ class Event(GeoModel):
         return self._nbr_tickets
 
     def tickets_sold(self):
-        if self.status != 'Draft':
-            return self.nbr_tickets() - self.available_tickets()
-        else:
-            return 0
+        return self.nbr_tickets() - self.available_tickets()
 
     def timezone_name(self):
         if hasattr(self,'_timezone_name'):
@@ -793,15 +791,15 @@ def update_events_firstdate(sender,**kwargs):
         if event.firstdate != representation.date:
             event.firstdate = representation.date
             dirty = True
-        if event.status == 'Draft':
-            event.status = 'Published'
+        if event.visibility == 'Draft':
+            event.visibility = 'Published'
             dirty = True
     else:
         if event.firstdate:
             event.firstdate = None
             dirty = True
-        if event.status != 'Draft':
-            event.status = 'Draft'
+        if event.visibility != 'Draft':
+            event.visibility = 'Draft'
             dirty = True
     if dirty:
         event.put()
@@ -817,7 +815,7 @@ def update_events_location(sender,**kwargs):
 def update_venues(sender,**kwargs):
     instance = kwargs['instance']
     
-    if db.GqlQuery("SELECT * FROM banian_event WHERE venue = :1 AND status IN :2",instance.venue,['Published','On Sales','Sold Out','Sale Closed']).count():
+    if db.GqlQuery("SELECT * FROM banian_event WHERE venue = :1 AND status = :2",instance.venue,'Published').count():
         if instance.venue.status != 'Used':
             instance.venue.status = 'Used'
             instance.venue.put()

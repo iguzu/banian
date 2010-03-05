@@ -188,8 +188,8 @@ def publishEvent(testcase,event,do_run_tasks=True):
     representation.status = 'Generating'
     representation.job_id = job_id
     representation.put()
-    if event.status == 'Draft':
-        event.status = 'Published'
+    if event.visibility == 'Draft':
+        event.visibility = 'Published'
         event.put()
     ticket_class = models.TicketClass.gql("WHERE event=:1 ORDER BY __key__", event).get()
     seat_group = ticket_class.seat_groups[0]
@@ -455,7 +455,7 @@ class VADEVenueTestCase(TestCase):
     def testEditUnmutable(self):
         event = addEvent(self, self.user, 'Test event', nbr_seat=10)
         event = publishEvent(self, event)
-        self.assertEqual(event.status,'Published')
+        self.assertEqual(event.visibility,'Published')
         r = self.client.get(reverse('banian.venue.views.edit_venue',kwargs={'key':event.venue.key()}))
         self.assertEqual(r.status_code,403)
         r = self.client.post(reverse('banian.venue.views.edit_venue',kwargs={'key':event.venue.key()}))
@@ -464,7 +464,7 @@ class VADEVenueTestCase(TestCase):
     def testDeleteUnmutable(self):
         event = addEvent(self,self.user,"Test Event", nbr_seat=10)
         event = publishEvent(self, event)
-        self.assertEqual(event.status,'Published')
+        self.assertEqual(event.visibility,'Published')
         r = self.client.get(reverse('banian.venue.views.delete_venue',kwargs={'key':event.venue.key()}))
         self.assertEqual(r.status_code,403)
         r = self.client.post(reverse('banian.venue.views.delete_venue',kwargs={'key':event.venue.key()}))
@@ -808,7 +808,7 @@ class VADEEventTestCase(TestCase):
     def testEditUnmutable(self):
         event = models.Event.all().filter('name =','Test Event').get()
         event = publishEvent(self, event)
-        self.assertEqual(event.status,'Published')
+        self.assertEqual(event.visibility,'Published')
         r = self.client.get(reverse('banian.views.edit_event',kwargs={'key':event.key()})+'?step=1')
         self.assertEqual(r.status_code,403)
         r = self.client.post(reverse('banian.views.edit_event',kwargs={'key':event.key()})+'?step=1')
@@ -817,7 +817,7 @@ class VADEEventTestCase(TestCase):
     def testDeleteUnmutable(self):
         event = models.Event.all().filter('name =','Test Event').get()
         event = publishEvent(self, event)
-        self.assertEqual(event.status,'Published')
+        self.assertEqual(event.visibility,'Published')
         r = self.client.get(reverse('banian.views.delete_event',kwargs={'key':event.key()}))
         self.assertEqual(r.status_code,403)
         r = self.client.post(reverse('banian.views.delete_event',kwargs={'key':event.key()})+'?step=1')
@@ -1104,7 +1104,7 @@ class PublishTestCase(TestCase):
             completed, failed = run_tasks(lapse=60) #@UnusedVariable
             i = i+1
         e = models.Event.get(e.key())
-        self.assertNotEqual(e.status,'Draft',repr(e))
+        self.assertNotEqual(e.visibility,'Draft',repr(e))
         self.assertNotEqual(e.first_representation().status,'Draft')
         self.assertNotEqual(e.first_representation().status,'Generating')
         self.assertEqual(number,self.countSeats(e.first_representation()))
@@ -1134,7 +1134,7 @@ class PublishTestCase(TestCase):
             completed, failed = run_tasks(lapse=60) #@UnusedVariable
             i = i+1
         e = models.Event.get(e.key())
-        self.assertEqual(e.status,'Published')
+        self.assertEqual(e.visibility,'Published')
         self.assertEqual(e.first_representation().status,'On Sale')
         self.assertEqual(10,self.countSeats(e.first_representation()))
     
@@ -1160,7 +1160,7 @@ class PublishTestCase(TestCase):
             completed, failed = run_tasks(lapse=60) #@UnusedVariable
             i = i+1
         e = models.Event.get(e.key())
-        self.assertEqual(e.status,'Published')
+        self.assertEqual(e.visibility,'Published')
         self.assertEqual(e.first_representation().status,'Published')
         self.assertEqual(10,self.countSeats(e.first_representation()))
     
@@ -1175,7 +1175,7 @@ class PublishTestCase(TestCase):
         r = self.client.post(reverse('banian.views.publish',kwargs={'key':key,}),follow=True)
         self.assertContains(r, 'Cannot publish an event scheduled in the past')
         MarkupValidation(self,r.content)
-        self.assertEqual(e.status,'Draft')
+        self.assertEqual(e.visibility,'Draft')
         self.assertEqual(e.first_representation().status,'Draft')
         self.assertEqual(0,self.countSeats(e.first_representation()))
 
@@ -1204,7 +1204,7 @@ class PublishTestCase(TestCase):
         r = self.client.post(reverse('banian.views.publish',kwargs={'key':key,}),follow=True)
         self.assertContains(r, 'Cannot publish an event with an sale end date in the past')
         MarkupValidation(self,r.content)
-        self.assertEqual(e.status,'Draft')
+        self.assertEqual(e.visibility,'Draft')
         self.assertEqual(e.first_representation().status,'Draft')
         self.assertEqual(0,self.countSeats(e.first_representation()))
 
@@ -1228,7 +1228,7 @@ class PublishTestCase(TestCase):
             completed, failed = run_tasks(lapse=60) #@UnusedVariable
             i = i+1
         e = models.Event.get(e.key())
-        self.assertEqual(e.status,'Published')
+        self.assertEqual(e.visibility,'Published')
         self.assertEqual(e.first_representation().status,'On Sale')
         self.assertEqual(10,self.countSeats(e.first_representation()))
     
@@ -1336,7 +1336,7 @@ class UnpublishTestCase(TestCase):
         self.e = publishEvent(self, self.e)
 
     def testUnpublish(self):
-        self.assertNotEqual(self.e.status,'Draft')
+        self.assertNotEqual(self.e.visibility,'Draft')
         r = self.client.get(reverse('banian.views.unpublish_representation', kwargs={'key':str(self.e.first_representation().key())}),follow=True)
         formValidation(self, r)
         self.assertEqual(r.status_code, 200)
@@ -1347,7 +1347,7 @@ class UnpublishTestCase(TestCase):
         logging.debug(repr(c))
         logging.debug(repr(f))
         event = db.get(self.e.key())
-        self.assertEqual(event.status,'Draft',"event:%s\nrepresentation:%s" % (repr(event),repr(event.first_representation())))
+        self.assertEqual(event.visibility,'Draft',"event:%s\nrepresentation:%s" % (repr(event),repr(event.first_representation())))
         self.assertEqual(models.Seat.all().filter('representation =',event.first_representation()).get(),None)
         self.assertEqual(models.Ticket.all().filter('representation =',event.first_representation()).get(),None)
         MarkupValidation(self, r.content)
@@ -1359,7 +1359,7 @@ class UnpublishTestCase(TestCase):
     
     def testUnpublishAlreadySold(self):
         buyTickets(self, self.e.first_representation(), 1)
-        self.assertNotEqual(self.e.status,'Draft')
+        self.assertNotEqual(self.e.visibility,'Draft')
         self.assertEqual(models.Ticket.all().count(2),1)
         r = self.client.get(reverse('banian.views.unpublish_representation', kwargs={'key':str(self.e.first_representation().key())}),follow=True)
         self.assertContains(r,'already sold')
@@ -1369,7 +1369,7 @@ class UnpublishTestCase(TestCase):
         MarkupValidation(self, r.content)
         run_tasks(lapse=60)
         event = db.get(self.e.key())
-        self.assertNotEqual(event.status,'Draft')
+        self.assertNotEqual(event.visibility,'Draft')
         self.assertEqual(r.status_code, 200)
     def testCancel(self):
         pass
