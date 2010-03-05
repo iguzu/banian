@@ -4,17 +4,29 @@
 
 {% block content %}
 {% if form.errors %}<div class="error">Username and/or password is invalid</div>{% endif %}
-<div class="span-15 last">
+<div class="span-18 last">
+{%if next %}<div class="notice"><h2>The content or action you have taken requires you to login</h2></div>{%endif%}
+<div class="span-8">
 <form action="{{ request.get_full_path }}" method="post">
-  <fieldset><legend>Login information</legend>
+  <fieldset style="height:200px"><legend>Already a Member</legend>
    <table>
    	<tr><td><label>Username: </label></td><td> {{ form.username }}</td></tr>
    	<tr><td><label>Password: </label></td><td>{{ form.password }}</td></tr>
-  	<tr><td><button class="sexybutton" type="submit"><span><span><span class="ok">Login</span></span></span></button></td></tr>
+  	<tr><td><button class="sexybutton sexysimple sexyblue" type="submit"><span class="ok">Login</span></button></td></tr>
   	<tr><td colspan="5"><a href="../password/reset/">Forgot your password?</a></td></tr>
    </table>
   </fieldset>
 </form><br>
+
+</div>
+<div class="span-8">
+  <fieldset style="height:200px"><legend>Register</legend>
+<h2>I would like to become a member!</h2><br><p>Registering takes only 30 seconds and a valid email address!</p>
+<a href="{% url registration.views.register %}"class="sexybutton sexysimple sexyblue">Register Now!</a>
+
+  </fieldset>
+</div>
+
 </div>
 <script type="text/javascript">
 <!--

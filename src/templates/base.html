@@ -60,7 +60,7 @@
             {% if user.is_authenticated %}
              <div>Welcome, {{ user.username }}!</div>
             {%else%}
-             <form action="{% url registration.views.login%}" method="POST"><div style="margin-bottom:1em;"><input id="id_username" style="vertical-align:middle;" type="text" name="username" maxlength="75" ><input style="vertical-align:middle;margin-left:5px;" type="password" name="password" id="id_password" ><input style="vertical-align:middle;margin-left:5px;display:none" type="text" name="password-text" id="id_password-text" ><button class="sexybutton" type="submit" style="vertical-align:middle;"><span><span><span class="ok">Login</span></span></span></button><br><a href="/account/password/reset/">Forgot your password?</a></div></form>
+             <form action="{% url registration.views.login%}" method="POST"><div style="margin-bottom:1em;"><input id="id_username" style="vertical-align:middle;" type="text" name="username" maxlength="75" ><input style="vertical-align:middle;margin-left:5px;" type="password" name="password" id="id_password" ><input style="vertical-align:middle;margin-left:5px;display:none" type="text" name="password-text" id="id_password-text" ><button class="sexybutton sexysimple sexyblue sexysmall" type="submit" style="vertical-align:middle;"><span class="ok">Login</span></button><br><a href="/account/password/reset/">Forgot your password?</a></div></form>
             {%endif%}{%endif%}
 {% for item in menu %}
 {% if forloop.counter0 %} | {%endif%}
