@@ -177,9 +177,11 @@ def delete_event(request, key):
     return delete_object(request, event, extra_context=None , object_id=key,
         post_delete_redirect=reverse('banian.views.events'))
 
-@login_required
+
 def view_event(request, key):
     event = get_object_or_404(Event, key)
+    if event.status == 'Draft':
+        return HttpResponseNotFound()
     rep_list = Representation.gql("WHERE event = :1 AND status IN :2 ORDER BY date", event, ['Published', 'Sold Out', 'On Sale','Sale Closed']).fetch(fetch_limit)
     extra = {'representation_set':rep_list,}
     return object_detail(request, Event.all(), key, extra_context=extra, template_name='banian/event_view.html')    
@@ -227,7 +229,7 @@ def settings(request):
         form = SettingsForm(instance=user)
     return render_to_response(request, 'banian/settings_form.html', { 'form': form,'username':request.user.username, })
 
-@login_required
+
 def image(request, key):
     suffix = ''
     image = get_object_or_404(Image, key)

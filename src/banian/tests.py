@@ -901,6 +901,26 @@ class SearchEventTestCase(TestCase):
                 self.assertEqual(r.context[0]['object'],e)
         MarkupValidation(self,r.content)
 
+    def testViewEventNotLogged(self):
+        e= addEvent(self,self.user,str(uuid4()),nbr_seat=10)
+        e= publishEvent(self,e)
+        self.client.logout()
+        r = self.client.get(reverse('banian.views.view_event',kwargs={'key':e.key(),}),follow=True)
+        self.assertContains(r,e.name,2, 200)
+        if r.context:
+            if isinstance(r.context,dict) and 'form' in r.context:
+                self.assertEqual(r.context['object'],e)
+            elif isinstance(r.context,list) and 'form' in r.context[0]:
+                self.assertEqual(r.context[0]['object'],e)
+        MarkupValidation(self,r.content)
+
+
+    def testViewEventNotPublished(self):
+        e= addEvent(self,self.user,str(uuid4()),nbr_seat=10)
+        r = self.client.get(reverse('banian.views.view_event',kwargs={'key':e.key(),}),follow=True)
+        self.assertEqual(r.status_code, 404)
+
+
     def testViewEventNoImage(self):
         e= addEvent(self,self.user,str(uuid4()),nbr_seat=10,force_no_image=True)
         e= publishEvent(self,e)
