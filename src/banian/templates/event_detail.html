@@ -10,7 +10,7 @@
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
     <script type='text/javascript' src='http://www.google.com/jsapi'></script>
     <script type='text/javascript'>
-      google.load('visualization', '1', {'packages':['annotatedtimeline']});
+      google.load('visualization', '1', {'packages':['areachart']});
 	  google.setOnLoadCallback(google.setOnLoadCallback(drawChart));
 
 	  function drawChart() {
@@ -23,8 +23,8 @@
     		return;
   		}
 		var data = response.getDataTable();
-		var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
-		chart.draw(data, {displayAnnotations: true,max:{{object.nbr_tickets}}});
+		var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+		chart.draw(data, {max:{{object.nbr_tickets}},lineSize:2,pointSize:3,legend:'none'});
 	  }    
     </script>
  <script type="text/javascript">

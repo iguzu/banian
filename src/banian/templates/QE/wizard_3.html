@@ -38,7 +38,7 @@ ul { list-style-type: none; padding: 0px; margin: 0px; }
 <table>
          <tr><td><label for="id_nbr_tickets">{{form.nbr_tickets.label}}:</label></td><td>{{form.nbr_tickets}}</td></tr>
          <tr><td><label for="id_is_free">{{form.is_free.label}}:</label></td><td>{{form.is_free}}</td></tr>
-         <tr id='id_price_line'><td></td><td><label for="id_price">{{form.price.label}}:</label> {{form.price}} $</td></tr>
+         <tr id='id_price_line'><td></td><td><label for="id_price">{{form.price.label}}:</label> {{form.price}} {{form.currency}}</td></tr>
 </table>
 </fieldset>
 <div>

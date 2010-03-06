@@ -203,6 +203,7 @@ class Event(GeoModel):
     validators = db.ListProperty(db.Key)
     limit_duration = db.BooleanProperty(indexed=False,default=False)
     private = db.BooleanProperty(default=False)
+    currency_code = db.StringProperty(indexed=False)
 
     def __unicode__(self):
         return '%s - %s' % (self.key(),self.name)
@@ -210,13 +211,10 @@ class Event(GeoModel):
         ordering = ['name']
 
     def mutable(self):
-        status = None
-        if self.first_representation():
-            status = self.first_representation()
-        if status == 'Published' or status == 'On sales' or status == 'Sold Out' or status == 'Cancelled':
-            return False
-        else:
+        if self.visibility == 'Draft':
             return True
+        else:
+            return False
 
     def __init__(self,*args,**kwargs):
         super(Event,self).__init__(*args,**kwargs)

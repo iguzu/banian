@@ -39,12 +39,61 @@ def findInLocation(info, items):
             result.update(findInLocation(value,items))
     return result
 
-cctld = (
-         ('US','United States'),
-         ('CA','Canada'),
-         ('MX','Mexico'),
-         ('FR','France'),
-         )
+country_info =    {'AU':{'country_name':'Australia','currency_code':'AUD','currency_symbol':u'A$','publishing_cost':0.01},
+            'BR':{'country_name':'Brasil','currency_code':'BRL','currency_symbol':u'R$','publishing_cost':0.01},
+            'CA':{'country_name':'Canada','currency_code':'CAD','currency_symbol':u'C$','publishing_cost':0.01},
+            'CZ':{'country_name':'Czech Republic','currency_code':'CZK','currency_symbol':u'Kc','publishing_cost':0.01},
+            'DK':{'country_name':'Denmark','currency_code':'DKK','currency_symbol':u'kr (DKK)','publishing_cost':0.01},
+            'FR':{'country_name':'France','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'AT':{'country_name':'Austria','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'BE':{'country_name':'Belgium','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'CY':{'country_name':'Cyprus','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'FI':{'country_name':'Finland','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'DE':{'country_name':'Germany','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'GR':{'country_name':'Greece','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'IE':{'country_name':'Ireland','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'IT':{'country_name':'Italy','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'LU':{'country_name':'Luxembourg','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'MT':{'country_name':'Malta','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'NL':{'country_name':'Netherlands','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'AN':{'country_name':'Netherlands Antilles','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'PT':{'country_name':'Portugal','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'SK':{'country_name':'Slovakia','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'SI':{'country_name':'Slovenia','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'ES':{'country_name':'Spain','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'MC':{'country_name':'Monaco','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'AD':{'country_name':'Andorra','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'SM':{'country_name':'San Marino','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'GF':{'country_name':'French Guiana','currency_code':'EUR','currency_symbol':u'€','publishing_cost':0.01},
+            'HK':{'country_name':'Hong Kong','currency_code':'HKD','currency_symbol':u'HK$','publishing_cost':0.01},
+            'HU':{'country_name':'Hungary','currency_code':'HUF','currency_symbol':u'Ft','publishing_cost':0.01},
+            'IL':{'country_name':'Israel','currency_code':'ILS','currency_symbol':u'NIS','publishing_cost':0.01},
+            'JP':{'country_name':'Japan','currency_code':'JPY','currency_symbol':u'¥ (JPY)','publishing_cost':0.01},
+            'MX':{'country_name':'Mexico','currency_code':'MXN','currency_symbol':u'$ (MXN)','publishing_cost':0.01},
+            'NO':{'country_name':'Norway','currency_code':'NOK','currency_symbol':u'kr (NOK)','publishing_cost':0.01},
+            'PH':{'country_name':'Philippines','currency_code':'PHP','currency_symbol':u'Php','publishing_cost':0.01},
+            'PL':{'country_name':'Poland','currency_code':'PLN','currency_symbol':u'Zt','publishing_cost':0.01},
+            'GB':{'country_name':'United Kingdom','currency_code':'GBP','currency_symbol':u'£','publishing_cost':0.01},
+            'UK':{'country_name':'United Kingdom','currency_code':'GBP','currency_symbol':u'£','publishing_cost':0.01},
+            'SG':{'country_name':'Singapore','currency_code':'SGD','currency_symbol':u'$','publishing_cost':0.01},
+            'SE':{'country_name':'Sweden','currency_code':'SEK','currency_symbol':u'kr (SEK)','publishing_cost':0.01},
+            'CH':{'country_name':'Switzerland','currency_code':'CHF','currency_symbol':u'chf','publishing_cost':0.01},
+            'TW':{'country_name':'Taiwan','currency_code':'TWD','currency_symbol':u'NT$','publishing_cost':0.01},
+            'TH':{'country_name':'Thailand','currency_code':'THB','currency_symbol':u'Thb','publishing_cost':0.01},
+            'US':{'country_name':'United States','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'EC':{'country_name':'Ecuador','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'SV':{'country_name':'El Salvador','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'MH':{'country_name':'Marshall Islands','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'FM':{'country_name':'Federated States of Micronesia','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'PW':{'country_name':'Palau','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'PA':{'country_name':'Panama','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'TC':{'country_name':'Turks and Caicos Islands','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'ZW':{'country_name':'Zimbabwe','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'LR':{'country_name':'Liberia','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'VG':{'country_name':'British Virgin Islands','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01},
+            'VI':{'country_name':'United States Virgin Islands','currency_code':'USD','currency_symbol':u'US$','publishing_cost':0.01}}
+
+currency_choices = [('EUR', u'\u20ac'),('USD', u'US$'),('GBP', u'\xa3'),('BRL', u'R$'),('JPY', u'\xa5 (JPY)'),('CAD', u'C$'),('AUD', u'A$'), ('MXN', u'$ (MXN)'), ('DKK', u'kr (DKK)'), ('HUF', u'Ft'), ('HKD', u'HK$'), ('NOK', u'kr (NOK)'), ('TWD', u'NT$'), ('THB', u'Thb'), ('PHP', u'Php'), ('PLN', u'Zt'), ('CHF', u'chf'),  ('CZK', u'Kc'), ('SEK', u'kr (SEK)'), ('SGD', u'S$'), ('ILS', u'NIS')]
 
 
 def ValidateLocation(address=''):
@@ -89,10 +138,8 @@ def ValidateLocation(address=''):
             if short_addressname:
                 short_addressname = short_addressname + ', '
                 country_code = location_info['CountryNameCode']
-            for item in cctld:
-                if country_code == item[0]:
-                    country_code = item[1]
-                    break
+            if country_code in country_info:
+                    country_code = country_info[country_code]['country_name']
             short_addressname = short_addressname + country_code
         return latitude, longitude, addressname, short_addressname, location_info.get('CountryNameCode','')
 
@@ -491,6 +538,12 @@ class QEWhereForm(ModelForm):
         self.instance.venue.address = self.cleaned_data['address']
         self.instance.venue.location = db.GeoPt(self.cleaned_data['latitude'],self.cleaned_data['longitude'])
         self.instance.venue.put()
+        local_info =  country_info.get(self.instance.venue.country,None)
+        if local_info:
+            self.instance.currency = local_info['currency_code']
+        else:
+            self.instance = 'USD'
+        self.instance.put()
         return self.instance
 
 
@@ -558,12 +611,13 @@ class QEWhenForm(ModelForm):
             raise ValidationError('Event duration cannot be zero')
         return self.cleaned_data
 
-
 class QEHowManyForm(ModelForm):
+
+    _information = country_info.get('cctld',None)
     _verbose_name= 'Tickets'
 
     nbr_tickets = IntegerField()
-    is_free = ChoiceField(widget=RadioSelect, choices= [(1,'Tickets are free'),(2,'Tickets are sold for a fee')],label='Pricing Model')
+    is_free = ChoiceField(widget=RadioSelect,choices= [(1,'Tickets are free'),(2,'Tickets are sold for a fee')],label='Pricing Model')
     price = FloatField(required=False)
 
     def save(self):
@@ -577,7 +631,6 @@ class QEHowManyForm(ModelForm):
             self.instance.seat_configuration = sc
             self.instance.put()
             tc.seat_groups.append(sg.key())
-
         tc.general_admission = True
         if tc.general_admission:
             tc.name = 'General Admission'
@@ -589,7 +642,6 @@ class QEHowManyForm(ModelForm):
         sg.nbr_seat = self.cleaned_data['nbr_tickets']
         self.instance.seat_configuration.nbr_seat = sg.nbr_seat
         self.instance.seat_configuration.put()
-        
         sg.put()
         return self.instance
 
@@ -602,7 +654,7 @@ class QEHowManyForm(ModelForm):
             self.cleaned_data['price'] = 0.0
         return self.cleaned_data
     
-    def __init__(self,*args,**kwargs):
+    def __init__(self,*args,**kwargs):        
         self._owner = kwargs.pop('owner',None)
         super(QEHowManyForm,self).__init__(*args,**kwargs)
         tc = TicketClass.all().filter('event =',self.instance).get()
@@ -616,6 +668,9 @@ class QEHowManyForm(ModelForm):
             else:
                 self.fields['is_free'].initial = 1
                 self.fields['price'].initial = None
+        local_info =  country_info.get(self.instance.venue.country,None)
+        if local_info:
+            self.currency = local_info['currency_symbol']
 
 class QEOptionsForm(ModelForm):
     class Meta:

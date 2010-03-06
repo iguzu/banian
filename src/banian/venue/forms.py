@@ -5,7 +5,7 @@ from django.forms.forms import ValidationError
 from banian.models import Venue, SeatConfiguration, SeatGroup
 
 from google.appengine.ext import db
-from banian.forms import ValidateLocation, cctld
+from banian.forms import ValidateLocation
 
 from banian.utils import update_seat_config, update_seat_group, handle_images
 
