@@ -30,7 +30,7 @@
                     <td class="row"><a href="{% url banian.views.show_seat key=seat.key %}{%if page%}?redirect_page={{page}}{%endif%}">{%if seat.ticket_class.name%}{{seat.ticket_class.name}}<br>{%endif%}{%if seat.location%}}{{seat.location }}<br>{%endif%}Seat Number: {{seat.number}}</a></td>
                     <td class="row">{{seat.availability|availabilitystatus }}</td>
                     <td class="row">{{seat.ticket_class.price }}</td>
-                    <td class="row">{{seat.current_ticket.owner }}</td>
+                    <td class="row">{{seat.current_ticket.owner.name }} ({{seat.current_ticket.owner.username }})</td>
                     <td class="row">{%if seat.current_ticket.used%}Yes{%else%}No{%endif%}</td>                    
                 </tr>
              {% empty %}
