@@ -32,7 +32,6 @@ from ragendja.dbutils import get_object #@UnresolvedImport
 from banian.models import google_images, Image, Seat, SeatGroup, fetch_limit,\
     UserEvent, max_ticket_limit, TicketClass
 from django.core.urlresolvers import reverse
-        
 
 
 def auto_loader():

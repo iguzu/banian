@@ -23,6 +23,7 @@ import time
 import logging #@UnusedImport
 import gaepytz
 from datetime import datetime, timedelta
+from banian.model_utils import get_currency_code
 
 
 
@@ -295,10 +296,13 @@ def generate_seats(request):
         else:
             memo = "Payment of %.2f for publishing %d tickets (at 0.01$/ticket) for %s" % (representation.publishing_cost(),representation.event.nbr_assigned_seats(),representation.event.name + ', ' + str(representation.date))
             #TODO: must protect the payment in a transaction so it cannot be processed twice, see close representation for example    
-            paymentStatus = banian.paypal.processPayment(memo,
-                                           representation.paypal_id,
-                                           representation.publishing_cost(),
-                                           representation.pre_approval_key)        
+            paymentStatus, payKey = banian.paypal.processPaymentEx(request=request,
+                                                           memo=memo,
+                                                           amount=representation.publishing_cost(),
+                                                           apkey=representation.pre_approval_key,
+                                                           cancelURL=None,
+                                                           returnURL=None,
+                                                           currency_code=get_currency_code(event.venue.country))        
         if paymentStatus == 'Completed':
             if event.restrict_sale_period and event.onsale_date > datetime.utcnow().replace(tzinfo=gaepytz.utc):
                 representation.status = 'Published'
@@ -448,7 +452,14 @@ def close_representation(request):
                 total_commission_already_billed = total_commission_already_billed + payment.amount
             payment_amount = total_commission - total_commission_already_billed
             if payment_amount > 0:
-                paymentStatus = banian.paypal.processPayment(memo,representation.paypal_id,payment_amount,representation.pre_approval_key)
+                request=request,
+                paymentStatus, paykey = banian.paypal.processPaymentEx(request=request,
+                                                               memo=memo,
+                                                               amount=payment_amount,
+                                                               apkey=representation.pre_approval_key,
+                                                               cancelURL=None,
+                                                               returnURL=None,
+                                                               currency_code=get_currency_code(representation.event.venue.country))
                 payment.amount = payment_amount            
                 if paymentStatus == 'Completed':
                     payment.status = 'Completed'

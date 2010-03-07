@@ -6,6 +6,8 @@ import array
 import time
 import datetime
 import gaepytz
+import locale
+
 country_info =    {'AU':{'country_name':'Australia','currency_code':'AUD','currency_symbol':u'A$'},
             'BR':{'country_name':'Brasil','currency_code':'BRL','currency_symbol':u'R$'},
             'CA':{'country_name':'Canada','currency_code':'CAD','currency_symbol':u'C$'},
@@ -84,7 +86,7 @@ def f(tata):
     tata.x= 20
     return tata
 
-if __name__ == "__main__":
+if __name__ == "__madin__":
     currency_code = []
     currency_symbol = []
     for item in country_info.itervalues():
@@ -97,4 +99,7 @@ if __name__ == "__main__":
     for index,item in enumerate(currency_code):
         currencies.append((currency_code[index],currency_symbol[index]))
     print currencies
-            
+
+if __name__ == "__main__":
+    locale.setlocale(locale.LC_FR, '')
+    print locale.localeconv()          

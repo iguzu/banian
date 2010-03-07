@@ -259,7 +259,8 @@ def getPreApprovalDetails(key):
         return 'paypal_unexpected'
 
 
-def processPreApproval(memo, amount, paypal_id, returnURL, cancelURL, endDate, startDate=datetime.datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific'))):
+def processPreApproval(memo, amount, paypal_id, returnURL, cancelURL,endDate,currency_code,
+                       startDate=datetime.datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific')),):
     try:
         url = 'https://svcs.sandbox.paypal.com/AdaptivePayments/Preapproval'
         headers = {'X-PAYPAL-SECURITY-USERID':'broker_1259639312_biz_api1.iguzu.com',
@@ -275,7 +276,7 @@ def processPreApproval(memo, amount, paypal_id, returnURL, cancelURL, endDate, s
                                     'customerId':'iguzu.com', },
                    'senderEmail':paypal_id,
                    'maxTotalAmountOfAllPayments':'%.2f' % amount,
-                   'currencyCode':'USD',
+                   'currencyCode':currency_code,
                    'startingDate':utcToXsDateTime(startDate),
                    'endingDate':utcToXsDateTime(endDate),
                    'memo':memo,
@@ -304,8 +305,11 @@ def processPreApproval(memo, amount, paypal_id, returnURL, cancelURL, endDate, s
         logging.critical('Unexpected error in processing processPreApproval' + repr(sys.exc_info()))
         return 'paypal_unexpected', None
 
-def processPaymentEx(request, memo, amount, apkey,returnURL, cancelURL,receiver='broker_1259639312_biz@iguzu.com', receiverName='Iguzu Inc.'):
+def processPaymentEx(request, memo, amount, apkey,returnURL, cancelURL,currency_code,
+                     receiver='broker_1259639312_biz@iguzu.com', receiverName='Iguzu Inc.'):
     paypal_response = None
+    returnURL = returnURL or "http://www.iguzu.com"
+    cancelURL = cancelURL or "http://www.iguzu.com"
     try:
         url = 'https://svcs.sandbox.paypal.com/AdaptivePayments/Pay'
         headers = {'X-PAYPAL-SECURITY-USERID':'broker_1259639312_biz_api1.iguzu.com',
@@ -314,17 +318,17 @@ def processPaymentEx(request, memo, amount, apkey,returnURL, cancelURL,receiver=
                    'X-PAYPAL-REQUEST-DATA-FORMAT':'JSON',
                    'X-PAYPAL-RESPONSE-DATA-FORMAT':'JSON',
                    'X-PAYPAL-APPLICATION-ID':'APP-80W284485P519543T', }
-        payload = {'returnUrl':returnURL,
-                   'cancelUrl':cancelURL,
+        payload = {
                    'requestEnvelope':{'errorLanguage':'en_US', },
-                   'currencyCode':'USD',
+                   'currencyCode':currency_code,
                    'receiverList':{'receiver':[{'email':receiver, 'amount':"%.2f" % amount, }]},
                    'clientDetails':{'ipAddress':request.META.get('REMOTE_ADDR', ''), 'applicationId':"Iguzu brokerage platform",
                                     'customerId':request.user.username, 'partnerName':receiverName},
-                   'cancelUrl':"http://www.iguzu.com/",
                    'senderEmail':request.user.paypal_id,
                    'actionType':'PAY',
-                   'memo':memo
+                   'memo':memo,
+                   'returnUrl':returnURL,
+                   'cancelUrl':cancelURL
                    }
         if apkey:
             payload['preapprovalKey'] = apkey

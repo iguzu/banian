@@ -10,6 +10,7 @@ from django.utils import simplejson
 from geo.geomodel import GeoModel
 import array
 import time
+from banian.model_utils import get_publishing_cost
 google_images = {'jpeg':images.JPEG,'png':images.PNG, 'jpg':images.JPEG }
 
 import banian.model_utils
@@ -22,7 +23,6 @@ batch_delete_limit = 500
 max_ticket_limit = 30
 offline_mode = False
 commission_rate = 0.01 # 1 percent
-seat_publish_cost = 0.01 # 1 cents
 publishing_free_threshold = 2.00 # 2$ (200 seats)
 
 
@@ -473,7 +473,7 @@ class Representation(GeoModel):
     
     def publishing_cost(self):
         if not hasattr(self,'_publishing_cost'):
-            self._publishing_cost = self.event.nbr_assigned_seats() * seat_publish_cost
+            self._publishing_cost = self.event.nbr_assigned_seats() * get_publishing_cost(self.event.venue.country)
             if self._publishing_cost <= publishing_free_threshold:
                 self._publishing_cost = 0
         return self._publishing_cost

@@ -1,13 +1,14 @@
 {% extends 'contentbase.html' %}
+{%load istatus%}
 {% block title %}Confirm Event Publication{% endblock %}
 {% block content-leftpane %}
 <fieldset><legend class="title">Publish Event</legend>
 <div class="notice">Do you really want to publish <strong>{{representation.event.name }} </strong> ?</div>
 {% if representation.total_cost %}
-<div><strong>To publish this event you will be asked to pre-approve payments totaling {{representation.total_cost|floatformat:2}} $:</strong>
+<div><strong>To publish this event you will be asked to pre-approve payments totaling {{representation.total_cost|priceformat:representation.venue.country}}:</strong>
 <ul class="prepend-1">
-{% if representation.publishing_cost %}<li> {{representation.publishing_cost|floatformat:2}} $ for publishing {{representation.event.nbr_assigned_seats}} tickets (at 0.01$/ticket).</li>{%endif%}
-{% if representation.commission_cost %}<li>Up to {{representation.commission_cost|floatformat:2}} $ in comission if the event solds out (1% of {{representation.event.representation_value|floatformat:2}} $).</li>{%endif%}</ul>
+{% if representation.publishing_cost %}<li> {{representation.publishing_cost|priceformat:representation.venue.country}} $ for publishing {{representation.event.nbr_assigned_seats}} tickets (at {{0.01|priceformat:representation.venue.country}}/ticket).</li>{%endif%}
+{% if representation.commission_cost %}<li>Up to {{representation.commission_cost|priceformat:representation.venue.country}} in comission if the event solds out (1% of {{representation.event.representation_value|priceformat:representation.venue.country}}).</li>{%endif%}</ul>
 </div>
 {%endif%}
 <br>

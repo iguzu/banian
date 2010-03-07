@@ -58,15 +58,15 @@
 				$("#unpublish-button").hide();
 				$("#tickets-doorman").hide();
 				$("#id_value").html("0.0");
-				$("#id_available").html("0/0");
+				$("#id_total_tickets").html("0");
 			{%else%}
 				$("#status").text('Published');
 				$("#publish-button").hide()
 				$("#tickets-doorman").show();
 				$("#unpublish-button").show();
 				$("#tickets-button").show();				
-				$("#id_value").html(available + "/" + available);
-				$("#id_available").html(value);
+				$("#id_total_tickets").html(available);
+				$("#id_value").html(value);
  
 			{%endifequal%}
 		}
@@ -112,7 +112,7 @@
          <table>
           <tr><td><strong>Status:</strong></td><td id="status">{{ object.first_representation.status }}</td></tr>
           <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>
-          <tr><td><strong>Price:</strong></td><td>{{ object.first_ticket_class.price}}</td></tr>        
+          <tr><td><strong>Price:</strong></td><td>{{ object.first_ticket_class.price|priceformat:object.venue.country}}</td></tr>        
           <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
           <tr><td><strong>Date:</strong></td><td>{{ object.first_representation.date|date:"l, F jS Y \a\t P" }}</td></tr>
           <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
@@ -128,7 +128,7 @@
 {%ifnotequal object.first_representation.status "Draft" %}
   <fieldset><legend>Event information</legend>
   <table>
-  <tr><td style="width:125px"><strong>Event Value:</strong></td><td>{%if object.representation_value%}{{object.representation_value|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{%if object.revenues%}{{object.revenues|floatformat:2}} ${%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}} / {{object.nbr_tickets}}</td></tr>
+  <tr><td style="width:125px"><strong>Event Value:</strong></td><td>{%if object.first_ticket_class.price%}<span id="id_value">{{object.representation_value|amountformat:object.venue.country}}</span>{%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{%if object.first_ticket_class.price%}{{object.revenues|amountformat:object.venue.country}}{%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}} / <span id="id_total_tickets">{{object.nbr_tickets}}</span></td></tr>
   <tr><td colspan="6"><div id='chart_div' style='width: 700px; height: 240px;'></div></td></tr>
   </table>  
   </fieldset>

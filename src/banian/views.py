@@ -30,7 +30,8 @@ from banian.utils import update_object, create_object, get_own_object_or_404, po
                          location_window, reserve_seats, preparePayment, \
                          take_seats, calc_ticket_class_available, ElementExtracter,\
     transfer_to_paypal, generate_tickets
-from banian.model_utils import construct_timezone_choice  
+from banian.model_utils import construct_timezone_choice  , get_currency_code,\
+    get_publishing_cost, get_currency_symbol
 from banian.forms import EventForm, SelectVenueForm, SettingsForm, TicketClassForm, \
                          SelectSeatConfigForm, RepresentationForm, SelectTicketForm, SelectDistanceForm, QuickEventWizard,\
     QEHowManyForm, QEImagesNoteForm, QEOptionsForm, QEPreviewForm, QEWhatForm,\
@@ -41,6 +42,7 @@ import urllib
 import gaepytz
 import logging
 import gviz_api
+from banian.templatetags.istatus import priceformat, amountformat
 
 event_edit_form_list = [QEWhatForm,QEWhereForm,QEWhenForm,QEHowManyForm,QEOptionsForm,QEImagesNoteForm,QEPreviewForm]
 
@@ -68,6 +70,14 @@ def events(request):
 def show_event(request, key):
     event = get_own_object_or_404(request.user, Event, key)
     representation = event.first_representation()
+    logging.debug(repr(representation.pre_approval_status))
+    if representation.pre_approval_status == 'Processing':
+        logging.debug(repr('here'))
+        status = banian.paypal.getPreApprovalDetails(representation.pre_approval_key)
+        if status == 'Completed':
+            representation.pre_approval_status = 'Completed'
+            representation.put()
+            return publish(request, representation.key())        
     job_id = None; progress = 0; message = 'Not Started'
     if representation:
         job_id = representation.job_id        
@@ -318,17 +328,19 @@ def publish(request, key):
             publish = True
         else:
             # Create a paypal preapproval
-            memo = "Payment pre-approval to publish %s\n Total %.2f $:\n  - %.2f  for publishing %d tickets (at 0.01$/ticket)." % (representation.event.name + ', ' + str(representation.date),representation.total_cost(),representation.publishing_cost(),0)
+            memo = "Payment pre-approval to publish %s\n Total %s:\n" % (representation.event.name + ', ' + str(representation.date),priceformat(representation.total_cost(),event.venue.country))
+            memo = memo + "- %s  for publishing %d tickets (at %s/ticket)." % (priceformat(representation.publishing_cost(),event.venue.country),event.nbr_seats(),priceformat(get_publishing_cost(event.venue.country),event.venue.country))
             startDate = datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific'))
             if representation.commission_cost():
-                memo = memo + '\n  -Up to %.2f $ in comission if the representation solds out (1%% of %.2f $).' % (representation.commission_cost(),representation.event.representation_value())
+                memo = memo + '\n  -Up to %s in comission if the representation solds out (1%% of %s).' % (priceformat(representation.commission_cost(),event.venue.country),amountformat(representation.event.representation_value(),event.venue.country))
             preApprovalStatus, preApprovalKey = banian.paypal.processPreApproval(memo = memo,
                                                    amount = representation.total_cost(),
                                                    paypal_id= request.user.paypal_id,
                                                    returnURL = 'http://www.iguzu.com' + reverse('banian.views.publish',kwargs={'key':representation.key(),})+'?status=completed',
                                                    cancelURL = 'http://www.iguzu.com' + reverse('banian.views.publish',kwargs={'key':representation.key(),})+'?status=cancelled',
                                                    startDate = startDate,
-                                                   endDate = representation.date + timedelta(days=2))
+                                                   endDate = representation.date + timedelta(days=2),
+                                                   currency_code=get_currency_code(event.venue.country))
             if preApprovalStatus == 'past_start_date':
                 startDate = startDate + timedelta(days=1)
                 preApprovalStatus, preApprovalKey = banian.paypal.processPreApproval(memo = memo,
@@ -337,7 +349,8 @@ def publish(request, key):
                                                        returnURL = 'http://www.iguzu.com' + reverse('banian.views.publish',kwargs={'key':representation.key(),})+'?status=completed',
                                                        cancelURL = 'http://www.iguzu.com' + reverse('banian.views.publish',kwargs={'key':representation.key(),})+'?status=cancelled',
                                                        startDate = startDate,
-                                                       endDate = representation.date + timedelta(days=2))
+                                                       endDate = representation.date + timedelta(days=2),
+                                                       currency_code=get_currency_code(event.venue.country))
                 
             if preApprovalStatus == 'Processing':             
                 # pre approval we created, tranfert to paypal
@@ -368,6 +381,8 @@ def publish(request, key):
             elif preApprovalStatus == 'Processing':
                 # oups still not approved... redirect to paypal 
                 return transfer_to_paypal(request,"https://www.sandbox.paypal.com/webscr?cmd=_ap-preapproval&preapprovalkey=%s" % representation.pre_approval_key)
+        elif representation.pre_approval_status == 'Completed':
+            publish = True
     if publish:
         # Yeah we have pre approved payment, lets publish the event
         representation.pre_approval_status = 'Completed'
