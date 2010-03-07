@@ -305,7 +305,7 @@ def processPreApproval(memo, amount, paypal_id, returnURL, cancelURL,endDate,cur
         logging.critical('Unexpected error in processing processPreApproval' + repr(sys.exc_info()))
         return 'paypal_unexpected', None
 
-def processPaymentEx(request, memo, amount, apkey,returnURL, cancelURL,currency_code,
+def processPaymentEx(request, memo, amount, apkey,currency_code,returnURL=None, cancelURL=None,
                      receiver='broker_1259639312_biz@iguzu.com', receiverName='Iguzu Inc.'):
     paypal_response = None
     returnURL = returnURL or "http://www.iguzu.com"
@@ -360,53 +360,6 @@ def processPaymentEx(request, memo, amount, apkey,returnURL, cancelURL,currency_
     except:
         logging.critical('Unexpected error in processing processPayment' + repr(sys.exc_info()))
         return 'paypal_unexpected', None
-
-def processPayment(memo, paypal_id, amount, apkey):
-    paypal_response = None
-    try:
-        url = 'https://svcs.sandbox.paypal.com/AdaptivePayments/Pay'
-        headers = {'X-PAYPAL-SECURITY-USERID':'broker_1259639312_biz_api1.iguzu.com',
-                   'X-PAYPAL-SECURITY-PASSWORD':'1259639321',
-                   'X-PAYPAL-SECURITY-SIGNATURE':'AZcQUjrNMlC.PkfHpdAkBtgUbncuAzMHN6OQXSH4l-VnT7zH8LIrOoCX',
-                   'X-PAYPAL-REQUEST-DATA-FORMAT':'JSON',
-                   'X-PAYPAL-RESPONSE-DATA-FORMAT':'JSON',
-                   'X-PAYPAL-APPLICATION-ID':'APP-80W284485P519543T', }
-        payload = {'returnUrl':'http://www.iguzu.com/',
-                   'requestEnvelope':{'errorLanguage':'en_US', },
-                   'currencyCode':'USD',
-                   'receiverList':{'receiver':[{'email':'broker_1259639312_biz@iguzu.com', 'amount':"%.2f" % amount, }]},
-                   'clientDetails':{'ipAddress':'', 'applicationId':"Iguzu brokerage platform",
-                                    'customerId':'Iguzu', 'partnerName':'Iguzu Inc.'},
-                   'cancelUrl':"http://www.iguzu.com/",
-                   'preapprovalKey':apkey,
-                   'senderEmail':paypal_id,
-                   'actionType':'PAY',
-                   'memo':memo
-                   }
-        http_response = urlfetch.Fetch(url=url, headers=headers, method=urlfetch.POST, payload=simplejson.dumps(payload))
-        if http_response.status_code != 200:
-            logging.critical(repr(http_response))
-            return 'paypal_unexpected'
-        else:
-            paypal_response = simplejson.loads(http_response.content)        
-            envelope = paypal_response['responseEnvelope']
-            if envelope['ack'] == 'Success':
-                if paypal_response['paymentExecStatus'] == 'COMPLETED':
-                    return 'Completed'
-                else:
-                    logging.critical('paypal_unexpected Response: ' + repr(paypal_response))
-                    return 'paypal_unexpected'
-            elif envelope['ack'] == 'Failure':
-                if paypal_response['error'][0]['errorId'] == '569013' or \
-                   paypal_response['error'][0]['errorId'] == '569017' or \
-                   paypal_response['error'][0]['errorId'] == '569018':
-                    return 'Canceled'
-                else:
-                    logging.critical('paypal_unexpected Response: ' + repr(paypal_response))
-                    return 'paypal_unexpected' 
-    except:
-        logging.critical('Unexpected error in processing processPayment' + repr(sys.exc_info()))
-        return 'paypal_unexpected'
 
 
 def getPaymentDetail(paykey):

@@ -17,7 +17,7 @@ from google.appengine.api.labs import taskqueue
 from django.utils.simplejson import loads, dumps
 from banian.views import event_edit_form_list
 from banian.paypal import getPreApprovalDetails, processPreApproval,\
-    processPayment, processCancelPreApproval, PayPal
+    processPayment, processCancelPreApproval, PayPal, processPaymentEx
 import sys
 import cgi
 import base64
@@ -2488,7 +2488,7 @@ class PaypalTestCase(TestCase):
             raise AssertionError
         StubUrlFetch(f)
         enddate = datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific')) + timedelta(days=5)
-        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate)
+        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate,currency_code='USD')
         self.assertEqual(r,('paypal_unexpected',None))
         UnStubUrlFetch()
 
@@ -2497,7 +2497,7 @@ class PaypalTestCase(TestCase):
             return HttpResponseNotFound()
         StubUrlFetch(f)
         enddate = datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific')) + timedelta(days=5)
-        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate)
+        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate,currency_code='USD')
         self.assertEqual(r,('paypal_unexpected',None))
         UnStubUrlFetch()
 
@@ -2506,7 +2506,7 @@ class PaypalTestCase(TestCase):
             return HttpResponse()
         StubUrlFetch(f)
         enddate = datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific')) + timedelta(days=5)
-        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate)
+        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate,currency_code='USD')
         self.assertEqual(r,('paypal_unexpected',None))
         UnStubUrlFetch()
 
@@ -2515,7 +2515,7 @@ class PaypalTestCase(TestCase):
             return HttpResponse("{}")
         StubUrlFetch(f)
         enddate = datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific')) + timedelta(days=5)
-        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate)
+        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate,currency_code='USD')
         self.assertEqual(r,('paypal_unexpected',None))
         UnStubUrlFetch()
 
@@ -2525,7 +2525,7 @@ class PaypalTestCase(TestCase):
             return HttpResponse(dumps(self.pastResponse)) 
         StubUrlFetch(f)
         enddate = datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific')) + timedelta(days=5)
-        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate)
+        r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate,currency_code='USD')
         self.assertEqual(r,('past_start_date',None))
         UnStubUrlFetch()
 
@@ -2533,7 +2533,9 @@ class PaypalTestCase(TestCase):
         def f(*args,**kwargs):
             raise AssertionError
         StubUrlFetch(f)
-        r = processPayment("memo","sbl@iguzu.com","19.99","")
+        request = HttpRequest()
+        request.user = createUser(self, 'test', 'secret')        
+        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 
@@ -2541,7 +2543,9 @@ class PaypalTestCase(TestCase):
         def f(*args,**kwargs):
             return HttpResponseNotFound()
         StubUrlFetch(f)
-        r = processPayment("memo","sbl@iguzu.com","19.99","")
+        request = HttpRequest()
+        request.user = createUser(self, 'test', 'secret')
+        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 
@@ -2549,7 +2553,9 @@ class PaypalTestCase(TestCase):
         def f(*args,**kwargs):
             return HttpResponse()
         StubUrlFetch(f)
-        r = processPayment("memo","sbl@iguzu.com","19.99","")
+        request = HttpRequest()
+        request.user = createUser(self, 'test', 'secret')
+        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 
@@ -2557,7 +2563,9 @@ class PaypalTestCase(TestCase):
         def f(*args,**kwargs):
             return HttpResponse("{}")
         StubUrlFetch(f)
-        r = processPayment("memo","sbl@iguzu.com","19.99","")
+        request = HttpRequest()
+        request.user = createUser(self, 'test', 'secret')
+        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 
