@@ -212,8 +212,10 @@ class SettingsForm(ModelForm):
         
         """
         email = self.cleaned_data['email'].lower()
-        if User.all().filter('email =', email).count(1):
-            raise forms.ValidationError(_(u'This email address is already in use. Please supply a different email address.'))
+        users = User.all().filter('email =', email)
+        for user in users:
+            if user != self.instance:
+                raise forms.ValidationError(_(u'This email address is already in use. Please supply a different email address.'))
         return email
 
 
