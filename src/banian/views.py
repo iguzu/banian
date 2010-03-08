@@ -90,13 +90,14 @@ def show_event(request, key):
     context = {'representation':representation,'progress':progress, 'message':message,}
     if representation and representation.pre_approval_status == "Processing":
         context['display_unpublish'] = True
-    if representation and representation.status in ('On Sale', 'Published'):
+    if representation and representation.status not in ('Draft','Completed','Cancelled'):
         if Ticket.all().filter('representation =',event.first_representation()).get():
             context['display_cancel'] = True
         else:
             context['display_unpublish'] = True
-        context['display_doorman'] = True
-        context['display_link_message'] = True
+        if representation.status != 'Canceling':
+            context['display_doorman'] = True
+            context['display_link_message'] = True
     return object_detail(request, Event.all(), key, extra_context=context)    
 
 @login_required
@@ -572,21 +573,24 @@ def show_representation(request, key):
 def delete_representation(request, key):
     representation = get_object_or_404(Representation, key)
     event = get_own_object_or_404(request.user, Event, representation.event.key())
-    if representation.status == 'Published':
+    if representation.status != 'Draft' and representation.status != 'Completed':
         return HttpResponseForbidden("Representations cannot be modified after event was published")
     return delete_object(request, representation, extra_context=None , object_id=key,
         post_delete_redirect=reverse('banian.views.show_event', kwargs={'key':event.key(), }))
 
 @login_required
 def cancel_representation(request,key):
-    representation = get_object_or_404(Representation, key)
+    representation = get_own_object_or_404(request.user,Representation, key)
     event = get_own_object_or_404(request.user, Event, representation.event.key())
+    extra = { 'representation':representation}
+    if not Ticket.all().filter('representation =',representation).get():
+        return HttpResponseForbidden()
     if request.method == 'POST':
         representation.status = 'Cancelled'
         representation.put()
         Message(user=request.user, message=ugettext("Event has been cancelled")).put()
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':str(event.key()),}))
-    return render_to_response(request, 'banian/representation_cancel_confirm.html', { 'representation':representation})
+    return render_to_response(request, 'banian/representation_cancel_confirm.html', extra)
 
 @login_required
 def buy_representation(request, key):

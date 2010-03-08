@@ -729,6 +729,7 @@ class UserEvent(db.Model):
     venue_address = db.StringProperty(indexed=False)
     venue_timezone = db.StringProperty(indexed=False)
     venue_web_site = db.LinkProperty(indexed=False)
+    country = db.StringProperty(indexed=False)
     total_amount = db.FloatProperty(indexed=False)
     nbr_tickets = db.IntegerProperty(indexed=False)
     ticket_keys = db.ListProperty(db.Key,indexed=False)

@@ -113,7 +113,7 @@ def generate_tickets(request):
                   web_site=transaction.event_web_site, venue_web_site=transaction.venue_web_site,
                   representation_door_date=transaction.representation_door_date, ticket_keys=transaction.ticket_keys,
                   total_amount=transaction.total_amount, nbr_tickets=transaction.nbr_tickets,
-                  poster_image=transaction.event_poster_image)
+                  poster_image=transaction.event_poster_image,country=transaction.country)
         user_event.put()
     else:
         user_event.nbr_tickets = user_event.nbr_tickets + transaction.nbr_tickets

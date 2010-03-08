@@ -1,4 +1,5 @@
 {% extends "contentbase.html" %}
+{%load istatus%}
 {% block title %}{% if object %}Edit{% else %}Create{% endif %} Event{% endblock %}
 {% block extra-head %}
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/jquery-ui.js"></script>
@@ -38,7 +39,7 @@
           <tr><td><strong>Door Open/Access:</strong></td><td>{{ form.instance.door_open|floatformat:0  }} minutes before the event</td></tr>
 		  <tr><td colspan="2"><hr></td></tr>		 
 		  <tr><td><strong>Nbr Tickets:</strong></td><td>{{ form.sg.nbr_seat }}</td></tr>
-		  <tr><td><strong>Price:</strong></td><td>{{ form.ticket_class.price }}</td></tr>
+		  <tr><td><strong>Price:</strong></td><td>{{ form.ticket_class.price|priceformat:form.instance.venue.country }}</td></tr>
 		  <tr><td><strong>General Admission:</strong></td><td>{%if form.instance.ticket_class.general_admission%}Yes{%else%}No{%endif%}</td></tr>
  		<tr><td><strong>Restrict Sale Period:</strong></td><td>{%if form.instance.restrict_sale_period%}Yes</td></tr>
                    									{%if form.instance.onsale_date%}<tr><td></td><td>Begins on {{ form.instance.onsale_date|date:"F jS Y \a\t P" }}</td></tr>{%endif%}

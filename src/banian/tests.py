@@ -856,8 +856,48 @@ class VADEEventTestCase(TestCase):
         self.assertFalse(ElementExtracter('a',{'style':'display:none','href':reverse('banian.views.validator_list',kwargs={'key':event.key()})},include_tag=True).extract(r.content))        
         self.assertFalse(ElementExtracter('a',{'style':'display:none','href':reverse('banian.views.seats',kwargs={'key':event.first_representation().key()})},include_tag=True).extract(r.content))        
 
-    def testShowcancelled(self):
-        pass
+    def testShowCancelNoTicketSold(self):
+        self.user = createUser(self, 'test', 'secret')
+        e = addEvent(self,self.user,'Test Cancel',nbr_seat=10,price=10.00)
+        e = publishEvent(self, e)
+        rep = e.first_representation()
+        r = self.client.get(reverse('banian.views.cancel_representation',kwargs={'key':rep.key()}),follow=True)
+        self.assertEqual(r.status_code,403)
+        r = self.client.post(reverse('banian.views.cancel_representation',kwargs={'key':rep.key()}),follow=True)
+        self.assertEqual(r.status_code,403)
+
+    def testShowCancelTicketSoldFree(self):
+        self.user = createUser(self, 'test', 'secret')
+        e = addEvent(self,self.user,'Test Cancel',nbr_seat=10,price=0.00)
+        e = publishEvent(self, e)
+        rep = e.first_representation()
+        r = buyTickets(self,rep,1)
+        self.assertEqual(r.status_code,200)
+        r = self.client.get(reverse('banian.views.cancel_representation',kwargs={'key':rep.key()}),follow=True)
+        self.assertEqual(r.status_code,200)
+        formValidation(self,r)
+        MarkupValidation(self,r.content)
+        r = self.client.post(reverse('banian.views.cancel_representation',kwargs={'key':rep.key()}),follow=True)
+        self.assertEqual(r.status_code,200)
+        formValidation(self,r)
+        MarkupValidation(self,r.content)
+
+    def testShowCancelTicketSoldForFee(self):
+        self.user = createUser(self, 'test', 'secret')
+        e = addEvent(self,self.user,'Test Cancel',nbr_seat=10,price=10.00)
+        e = publishEvent(self, e)
+        rep = e.first_representation()
+        r = buyTickets(self,rep,1)
+        self.assertEqual(r.status_code,200)
+        r = self.client.get(reverse('banian.views.cancel_representation',kwargs={'key':rep.key()}),follow=True)
+        self.assertEqual(r.status_code,200)
+        MarkupValidation(self,r.content)
+        formValidation(self,r)
+        self.assertContains(r,'WARNING: Some tickets where already sold')
+        r = self.client.post(reverse('banian.views.cancel_representation',kwargs={'key':rep.key()}),follow=True)
+        self.assertEqual(r.status_code,200)
+        MarkupValidation(self,r.content)
+        formValidation(self,r)
 
 
 class SearchEventTestCase(TestCase):
@@ -1062,9 +1102,6 @@ class SearchEventTestCase(TestCase):
         self.assertEqual(e.first_representation().status,'Published')
         r = self.client.get(reverse('banian.views.search_events'))
         self.assertEqual(len(r.context['event_list']),1)
-
-    def testSearchShowCanceltEvent(self):
-        pass
         
 class PublishTestCase(TestCase):
     def setUp(self):
@@ -1326,6 +1363,21 @@ class PublishTestCase(TestCase):
         e = publishEvent(self, e)
         self.assertEqual(e.first_representation().status,'Published')
 
+    def testTicketPreview(self):
+        e = addEvent(self,self.user,'test',nbr_seat=10)
+        e = publishEvent(self, e)
+        r = self.get(reverse('banian.views.preview_ticket',kwargs={'key':e.first_representation().key()}))
+        self.assertEqual(r.status_code,200)
+        MarkupValidation(self, r.content)
+
+    
+    def testSalePagePreview(self):
+        e = addEvent(self,self.user,'test',nbr_seat=10)
+        e = publishEvent(self, e)
+        r = self.get(reverse('banian.views.preview_sale_page',kwargs={'key':e.first_representation().key()}))
+        self.assertEqual(r.status_code,200)
+        MarkupValidation(self, r.content)
+
         
 class UnpublishTestCase(TestCase):
     def setUp(self):
@@ -1371,8 +1423,6 @@ class UnpublishTestCase(TestCase):
         event = db.get(self.e.key())
         self.assertNotEqual(event.visibility,'Draft')
         self.assertEqual(r.status_code, 200)
-    def testCancel(self):
-        pass
 
 class ListMyEventTestCase(TestCase):
     def setUp(self):
@@ -1510,13 +1560,7 @@ class ListMyEventTestCase(TestCase):
         self.assertEqual(r.context['is_paginated'],0)
         self.assertEqual(r.template[0].name,'banian/event_list.html')
         MarkupValidation(self,r.content)
-
-    def testTicketPreview(self):
-        pass
-    
-    def testSalePagePreview(self):
-        pass
-
+        
 class DoormansTestCase(TestCase):
     def setUp(self):
         logging.debug('DoormansTestCase')
@@ -2774,14 +2818,6 @@ class RepresentationTicketHistoryCase(TestCase):
     def setUp(self):
         self.user = createUser(self)
         self.e = addEvent(self,self.user,'test',nbr_seat=10)
-
-    def testBasicHistory(self):
-        r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':self.e.first_representation().key()}),follow=True)
-        self.assertEqual(r.status_code,200)
-        logging.debug(repr(r.content))
-        r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':str(self.e.first_representation().key()) + '?format=%s' % 'JavaScript'}),follow=True)
-        self.assertEqual(r.status_code,404)
-        logging.debug(repr(r.content))
 
     def testBasicHistory(self):
         r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':self.e.first_representation().key()}),follow=True)

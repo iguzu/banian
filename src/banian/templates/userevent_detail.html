@@ -22,7 +22,7 @@
   </fieldset>
 <fieldset><legend>Tickets</legend>
    		<table>
-          <tr><td>You have {{object.nbr_tickets}} Tickets, totaling a value of {{ object.total_amount|floatformat:2 }} $</td></tr>
+          <tr><td>You have {{object.nbr_tickets}} Tickets, totaling a value of {{ object.total_amount|amountformat:object.country }}</td></tr>
       </table>      
 
 
