@@ -35,8 +35,8 @@ paypal_processPreApproval = None
 paypal_getPreApprovalDetails = None
 def StubPaypal():
     global paypal_processPayment, paypal_processPreApproval, paypal_getPreApprovalDetails
-    def processPayment(*args,**kwargs):
-        return 'Completed'
+    def processPaymentEx(*args,**kwargs):
+        return 'Completed',None
     def processPreApproval(*args,**kwargs):
         return 'Processing', None
     def getPreApprovalDetails(*args,**kwargs):
@@ -44,8 +44,8 @@ def StubPaypal():
 
     paypal_module = sys.modules['banian.paypal']
     if not paypal_processPayment:
-        paypal_processPayment = paypal_module.processPayment
-        paypal_module.processPayment = processPayment
+        paypal_processPayment = paypal_module.processPaymentEx
+        paypal_module.processPaymentEx = processPaymentEx
     if not paypal_processPreApproval:
         paypal_processPreApproval = paypal_module.processPreApproval
         paypal_module.processPreApproval = processPreApproval
@@ -57,7 +57,7 @@ def unStubPaypal():
     global paypal_processPayment, paypal_processPreApproval, paypal_getPreApprovalDetails
     paypal_module = sys.modules['banian.paypal']
     if paypal_processPayment:
-        paypal_module.processPayment = paypal_processPayment
+        paypal_module.processPaymentEx = paypal_processPayment
         paypal_processPayment = None
     if paypal_processPreApproval:
         paypal_module.processPreApproval = paypal_processPreApproval
@@ -2120,7 +2120,7 @@ class TransactionTestCase(TestCase):
         for transaction in transactions:
             self.assertEqual(transaction.total_amount,0.0)
         r = self.client.get(reverse('banian.views.transactions'))
-        self.assertContains(r,'0.00 $',2)
+        self.assertContains(r,'0.00',2)
         self.assertEqual(len(r.context['transaction_list']),4)
         MarkupValidation(self, r.content)
 
@@ -2135,9 +2135,13 @@ class TransactionTestCase(TestCase):
         self.assertEqual(len(transactions),2)
         for transaction in transactions:
             r = self.client.get(reverse('banian.views.show_transaction',kwargs={'key':str(transaction.key()),}))
-            self.assertContains(r,'0.00 $')
+            self.assertContains(r,'Free')
             self.assertEqual(r.context['object'],transaction)
             MarkupValidation(self, r.content)
+            
+    def testTransactionEuro(self):
+        pass
+    
     
     def test22Transactions(self):
         logging.debug('test22Transactions')

@@ -542,16 +542,18 @@ def schedule_put_on_sales(request):
     events = Event.gql("WHERE onsale_date < :1 AND visibility = :2",
                                          datetime.utcnow().replace(tzinfo=gaepytz.utc) + timedelta(hours=48),
                                          'Published')
-    for event in events: 
-        onesaletime = time.mktime(event.onsale_date.timetuple())
-        task = Task(url='/tasks/put_on_sale/', params={'event':event.key(),'timestamp':onesaletime,}, eta=event.onsale_date)
-        try:
-            task.add(queue_name='long-term-processing')
-        except UnknownQueueError:
-            ## In test cases the long-term-processing queue doesn't seems to be available. Since the dev server 
-            ## is not running it is concevable that the queue.yaml was not read... not sure. In anycase this a 
-            ## fallback if enqueueing fails with that error.
-            task.add()
+
+    for event in events:
+        if event.onsale_date:
+            onesaletime = time.mktime(event.onsale_date.timetuple())
+            task = Task(url='/tasks/put_on_sale/', params={'event':event.key(),'timestamp':onesaletime,}, eta=event.onsale_date)
+            try:
+                task.add(queue_name='long-term-processing')
+            except UnknownQueueError:
+                ## In test cases the long-term-processing queue doesn't seems to be available. Since the dev server 
+                ## is not running it is concevable that the queue.yaml was not read... not sure. In anycase this a 
+                ## fallback if enqueueing fails with that error.
+                task.add()
     logging.info('schedule_put_on_sales - End') 
     return HttpResponse("Completed") 
 
