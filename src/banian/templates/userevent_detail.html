@@ -1,4 +1,5 @@
 {% extends "contentbase.html" %}
+{%load istatus%}
 {% block title %}Event Detail{% endblock %}
 {% block content-leftpane %}
   <fieldset><legend class="title">{{object.name}}</legend>
@@ -39,7 +40,7 @@
                 <td class="row">{{ticket.location_str}}</td>
                 <td class="row">{{ticket.number}}</td>
                 <td class="row">{{ticket.ticket_class_name}}</td>
-                <td class="row">{{ticket.price|floatformat:2}} $</td>
+                <td class="row">{{ticket.price|priceformat:ticket.country}}</td>
             </tr>
 		{% empty %}
 		<tr><td colspan="2"><i>No ticket found for this transaction</i></td></tr>

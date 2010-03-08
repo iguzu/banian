@@ -13,7 +13,7 @@
          <table>
           <tr><td><strong>Location:</strong></td><td>{%if object.ticket_class.name%}{{object.ticket_class.name}}<br>{%endif%}{%if object.location%}}{{object.location }}<br>{%endif%}Seat Number: {{object.number}}</td></tr>          
           <tr><td><strong>Availability:</strong></td><td>{{object.availability|availabilitystatus }}</td></tr>          
-          <tr><td><strong>Price:</strong></td><td>{{object.ticket_class.price }}</a></td></tr>
+          <tr><td><strong>Price:</strong></td><td>{{object.ticket_class.price|priceformat:object.representation.venue.country }}</a></td></tr>
           <tr><td><strong>Current Owner:</strong></td><td>{{object.current_ticket.owner.name }} ({{object.current_ticket.owner.username}})</td></tr>
           <tr><td><strong>Scanned:</strong></td><td>{%if object.current_ticket.used %}Yes{%else%}No{%endif%}</td></tr>
       </table>      

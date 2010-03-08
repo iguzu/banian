@@ -17,7 +17,7 @@ from google.appengine.api.labs import taskqueue
 from django.utils.simplejson import loads, dumps
 from banian.views import event_edit_form_list
 from banian.paypal import getPreApprovalDetails, processPreApproval,\
-    processPayment, processCancelPreApproval, PayPal, processPaymentEx
+                          processCancelPreApproval, PayPal, processPaymentEx
 import sys
 import cgi
 import base64
@@ -1511,6 +1511,11 @@ class ListMyEventTestCase(TestCase):
         self.assertEqual(r.template[0].name,'banian/event_list.html')
         MarkupValidation(self,r.content)
 
+    def testTicketPreview(self):
+        pass
+    
+    def testSalePagePreview(self):
+        pass
 
 class DoormansTestCase(TestCase):
     def setUp(self):
@@ -2522,7 +2527,7 @@ class PaypalTestCase(TestCase):
 
     def testprocessPreApprovalPastStartDate(self):
         def f(*args,**kwargs):
-            return HttpResponse(dumps(self.pastResponse)) 
+            return HttpResponse(dumps(self.PreApproval_pastResponse)) 
         StubUrlFetch(f)
         enddate = datetime.utcnow().replace(tzinfo=gaepytz.utc).astimezone(gaepytz.timezone('US/Pacific')) + timedelta(days=5)
         r = processPreApproval("memo",19.99,"sbl@iguzu.com","","",enddate,currency_code='USD')
@@ -2535,7 +2540,7 @@ class PaypalTestCase(TestCase):
         StubUrlFetch(f)
         request = HttpRequest()
         request.user = createUser(self, 'test', 'secret')        
-        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
+        r,paykey = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD',receiverName='toto')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 
@@ -2545,7 +2550,7 @@ class PaypalTestCase(TestCase):
         StubUrlFetch(f)
         request = HttpRequest()
         request.user = createUser(self, 'test', 'secret')
-        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
+        r,paykey = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD',receiverName='toto')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 
@@ -2555,7 +2560,7 @@ class PaypalTestCase(TestCase):
         StubUrlFetch(f)
         request = HttpRequest()
         request.user = createUser(self, 'test', 'secret')
-        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
+        r,paykey = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD',receiverName='toto')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 
@@ -2565,7 +2570,7 @@ class PaypalTestCase(TestCase):
         StubUrlFetch(f)
         request = HttpRequest()
         request.user = createUser(self, 'test', 'secret')
-        r = processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD')
+        r,paykey= processPaymentEx(request=request,memo="memo",amount="19.99",currency_code='USD',receiverName='toto')
         self.assertEqual(r,'paypal_unexpected')
         UnStubUrlFetch()
 

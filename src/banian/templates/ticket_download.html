@@ -1,3 +1,4 @@
+{%load istatus%}
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
@@ -57,7 +58,7 @@
 			</td>
 		</tr></table>	
 	</td></tr>
-	<tr><td><table style="margin-bottom:0;"><tr><td style="width:220px;text-align:left;font-size:10px;font-family:Arial" >{{object.t_id}}</td><td style="width:220px;text-align:right;font-size:10px;font-family:Arial">Price: {%if object.price%}{{object.price|floatformat:2}} ${%else%}Free{%endif%}</td></tr></table></td></tr>
+	<tr><td><table style="margin-bottom:0;"><tr><td style="width:220px;text-align:left;font-size:10px;font-family:Arial" >{{object.t_id}}</td><td style="width:220px;text-align:right;font-size:10px;font-family:Arial">Price: {{object.price|priceformat:object.country}}</td></tr></table></td></tr>
 </table>
 </td><td style="width:190px">
 <img src="http://chart.apis.google.com/chart?chs=190x190&amp;chld=H|0&amp;cht=qr&amp;chl={{object.t_id}}" alt="qs code" >

@@ -1,4 +1,5 @@
 {% extends "contentbase.html" %}
+{% load istatus %}
 {% block title %}Event Detail{% endblock %}
 {% block content-leftpane %}
 {%if preview%}<div class="notice">This is a preview of the sale page of your event. This message will not appear on the real page.</div>{%endif%}
@@ -8,7 +9,7 @@
    <fieldset><legend>Event Details</legend>
          <table>
           <tr><td><strong>Name:</strong></td><td>{{ object.name }}</td></tr>
-          <tr><td><strong>Price:</strong></td><td>{{ object.first_ticket_class.price}}</td></tr>
+          <tr><td><strong>Price:</strong></td><td>{{ object.first_ticket_class.price|priceformat:object.venue.country}}</td></tr>
           <tr><td><strong>Venue:</strong></td><td>{{object.venue.name }}</td></tr>
           <tr><td><strong>Address:</strong></td><td>{{object.venue.address }}</td></tr>
 {%if object.description%}<tr><td><strong>Description:</strong></td><td>{{ object.description }}</td></tr>{%endif%}

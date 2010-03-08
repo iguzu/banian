@@ -1,4 +1,5 @@
 {% extends "contentbase.html" %}
+{%load istatus%}
 {% block title %}Transaction Detail{% endblock %}
 {% block extra-head %}
 <script type="text/javascript">
@@ -42,7 +43,7 @@
           <tr><td><strong>Date of {{object.type}}:</strong></td><td>{{ object.date|date:"M jS Y G:i:s" }}</td></tr>
           <tr><td><strong>Type:</strong></td><td>{{ object.type }}</td></tr>
           <tr><td><strong>Ticket Purchased:</strong></td><td>{{ object.nbr_tickets }}</td></tr>
-          <tr><td><strong>{{object.type}} Amount:</strong></td><td id="id_total_amount">{{ object.total_amount|floatformat:2 }} $</td></tr>
+          <tr><td><strong>{{object.type}} Amount:</strong></td><td id="id_total_amount">{{ object.total_amount|priceformat:object.country }}</td></tr>
           </table>
    </fieldset>
    <fieldset><legend>Event Details</legend>
@@ -73,7 +74,7 @@
                 <td class="row">{{ticket.location_str}}</td>
                 <td class="row">{{ticket.number}}</td>
                 <td class="row">{{ticket.ticket_class_name}}</td>
-                <td class="row">{{ticket.price|floatformat:2}} $</td>
+                <td class="row">{{ticket.price|priceformat:object.country}}</td>
             </tr>
 		{% empty %}
 		{%ifequal object.payment_status "Processing" %}<tr><td colspan="2"><i>Please approve the payment to generate the tickets</i></td></tr>{%else%}

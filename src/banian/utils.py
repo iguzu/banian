@@ -32,6 +32,7 @@ from ragendja.dbutils import get_object #@UnresolvedImport
 from banian.models import google_images, Image, Seat, SeatGroup, fetch_limit,\
     UserEvent, max_ticket_limit, TicketClass
 from django.core.urlresolvers import reverse
+from banian.model_utils import get_currency_code
 
 
 def auto_loader():
@@ -334,6 +335,8 @@ def preparePayment(request, representation, data,transaction):
                             amount=total,
                             apkey=None,
                             receiver=representation.owner.paypal_id,
+                            currency_code=get_currency_code(representation.event.venue.country),
+                            receiverName= representation.owner.name + '(%s)' % representation.owner.username, 
                             returnURL='http://www.iguzu.com' + reverse('banian.views.show_transaction',kwargs={'key':transaction.key()}) + '?status=completed&new=True',
                             cancelURL='http://www.iguzu.com' + reverse('banian.views.show_transaction',kwargs={'key':transaction.key()}) +'?status=cancelled')
 

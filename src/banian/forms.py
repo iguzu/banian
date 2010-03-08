@@ -27,6 +27,7 @@ import time
 
 from banian.models import SeatGroup
 from banian.utils import handle_images, TextField, find_closest_timezone_choice
+from banian.templatetags.istatus import priceformat
 
 def findInLocation(info, items):
     result = {}
@@ -374,7 +375,7 @@ class SelectTicketForm(Form):
         id = 1
         for ticket_class in self._ticketclass_list:
             if ticket_class.price:
-                self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (%.2f $)' % ticket_class.price,initial=0,help_text=ticket_class.total_available_text)
+                self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (%s)' % priceformat(ticket_class.price,self._representation.event.venue.country),initial=0,help_text=ticket_class.total_available_text)
             else:
                 self.fields['tc' + str(id)] = IntegerField(label=ticket_class.name + ' (Free)',initial=0,help_text=ticket_class.total_available_text)
             self.fields['tc' + str(id)].widget.attrs['class'] = 'ui-slider'

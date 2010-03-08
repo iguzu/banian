@@ -641,7 +641,7 @@ def buy_representation(request, key):
                                       venue_web_site=event.venue.web_site,representation_door_date=door_date,
                                       event_thumbnail_image = event_thumbnail_image,status="Processing Payment",
                                       total_amount=total_amount,event_poster_image = event_poster_image, nbr_tickets=total,
-                                      reservation=reservation)
+                                      reservation=reservation,country=representation.venue.country)
             transaction.put()
 
             ## Phase 2, request payment key if the payment is required
@@ -694,7 +694,7 @@ def buy_representation(request, key):
                                 already_purchase_tickets=already_purchase_tickets, max_tickets=max_tickets)
     template_name = "select_tickets.html"
     t = loader.get_template(template_name)
-    c = RequestContext(request, {'form':form, 'event':event,'object':event, 'representation':representation,'max_tickets':max_tickets,'already_purchase_tickets':already_purchase_tickets })
+    c = RequestContext(request, {'form':form, 'event':event,'object':event, 'representation':representation,'max_tickets':max_tickets,'already_purchase_tickets':already_purchase_tickets,'currency_symbol':get_currency_symbol(event.venue.country),})
     response = HttpResponse(t.render(c))
     return response    
 
@@ -917,6 +917,7 @@ def preview_ticket(request,key):
     object.price = tc.price
     object.event_image = event.thumbnail_image
     object.ticket_class_name = tc.name
+    object.country = event.venue.country
 
     return render_to_response(request, 'banian/ticket_download.html',
                               {'object':object,'preview':True,

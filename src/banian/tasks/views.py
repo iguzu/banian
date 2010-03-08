@@ -87,7 +87,8 @@ def generate_tickets(request):
                               location=location,
                               ticket_class_name=seat.ticket_class.name,
                               event_image=event_thumbnail_image,
-                              status='Valid'))
+                              status='Valid',
+                              country=seat.representation.venue.country))
     slice = 0
     batch = put_limit / 10
     ticket_keys = []
@@ -167,7 +168,7 @@ def refund_tickets(request):
                                       venue_web_site=transaction.venue_web_site,representation_door_date=transaction.representation_door_date,
                                       event_thumbnail_image = transaction.event_thumbnail_image,status="Completed",
                                       total_amount=(-1 * transaction.total_amount),event_poster_image = transaction.event_poster_image, nbr_tickets=transaction.nbr_tickets,
-                                      parent=transaction)
+                                      parent=transaction,country=representation.venue.country)
             refund_transaction.put()
             for ticket in transaction.ticket_set:
                 ticket.status = 'Refunded'
@@ -302,6 +303,7 @@ def generate_seats(request):
                                                            apkey=representation.pre_approval_key,
                                                            cancelURL=None,
                                                            returnURL=None,
+                                                           receiverName='Iguzu.com Inc.',
                                                            currency_code=get_currency_code(event.venue.country))        
         if paymentStatus == 'Completed':
             if event.restrict_sale_period and event.onsale_date > datetime.utcnow().replace(tzinfo=gaepytz.utc):
@@ -459,6 +461,7 @@ def close_representation(request):
                                                                apkey=representation.pre_approval_key,
                                                                cancelURL=None,
                                                                returnURL=None,
+                                                               receiverName='Iguzu.com Inc.',
                                                                currency_code=get_currency_code(representation.event.venue.country))
                 payment.amount = payment_amount            
                 if paymentStatus == 'Completed':

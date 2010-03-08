@@ -305,8 +305,8 @@ def processPreApproval(memo, amount, paypal_id, returnURL, cancelURL,endDate,cur
         logging.critical('Unexpected error in processing processPreApproval' + repr(sys.exc_info()))
         return 'paypal_unexpected', None
 
-def processPaymentEx(request, memo, amount, apkey,currency_code,returnURL=None, cancelURL=None,
-                     receiver='broker_1259639312_biz@iguzu.com', receiverName='Iguzu Inc.'):
+def processPaymentEx(request, memo, amount,currency_code,receiverName,apkey=None,returnURL=None, cancelURL=None,
+                     receiver='broker_1259639312_biz@iguzu.com'):
     paypal_response = None
     returnURL = returnURL or "http://www.iguzu.com"
     cancelURL = cancelURL or "http://www.iguzu.com"

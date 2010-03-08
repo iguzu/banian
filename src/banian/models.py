@@ -510,6 +510,7 @@ class Transaction(db.Model):
     reservation = db.StringProperty()
     payment_key = db.StringProperty(indexed=False)
     payment_status = db.StringProperty(indexed=False,choices=set(['Processing','Completed','Canceled']))
+    country = db.StringProperty(indexed=False)
 
     last_modified = db.DateTimeProperty(auto_now=True,indexed=False)
     created = db.DateTimeProperty(auto_now_add=True,indexed=False)
@@ -648,6 +649,7 @@ class Ticket(db.Model):
     barcode = db.ReferenceProperty(Image,collection_name='ticket_barcode_set')
     timezone = db.StringProperty(indexed=False)
     date = db.DateTimeProperty()
+    country = db.StringProperty(indexed=False)
     general_admission = db.BooleanProperty(indexed=False)
     door_date = db.DateTimeProperty(indexed=False)
     address = db.StringProperty(indexed=False)
