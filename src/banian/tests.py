@@ -1366,7 +1366,7 @@ class PublishTestCase(TestCase):
     def testTicketPreview(self):
         e = addEvent(self,self.user,'test',nbr_seat=10)
         e = publishEvent(self, e)
-        r = self.get(reverse('banian.views.preview_ticket',kwargs={'key':e.first_representation().key()}))
+        r = self.client.get(reverse('banian.views.preview_ticket',kwargs={'key':e.first_representation().key()}))
         self.assertEqual(r.status_code,200)
         MarkupValidation(self, r.content)
 
@@ -1374,7 +1374,7 @@ class PublishTestCase(TestCase):
     def testSalePagePreview(self):
         e = addEvent(self,self.user,'test',nbr_seat=10)
         e = publishEvent(self, e)
-        r = self.get(reverse('banian.views.preview_sale_page',kwargs={'key':e.first_representation().key()}))
+        r = self.client.get(reverse('banian.views.preview_sale_page',kwargs={'key':e.first_representation().key()}))
         self.assertEqual(r.status_code,200)
         MarkupValidation(self, r.content)
 
