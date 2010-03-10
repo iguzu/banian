@@ -3,6 +3,7 @@ Views which allow users to create and activate accounts.
 
 """
 
+from django.contrib import messages #@UnresolvedImport
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -14,7 +15,6 @@ from registration.forms import UserAuthenticationForm,\
 from django.contrib.auth.forms import PasswordChangeForm
 from registration.models import RegistrationProfile
 from recaptcha.client import captcha
-from django.contrib.auth.models import Message
 from django.utils.translation import ugettext #@UnresolvedImport
 from django.contrib.sites.models import Site, RequestSite
 from django.views.decorators.cache import never_cache
@@ -178,9 +178,7 @@ def password_change(request, template_name='registration/password_change_form.ht
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             form.save()
-            if request.user.is_authenticated():
-                Message(user=request.user, message=ugettext("password was updated successfully.")).put()
-
+            messages.success(request, "password was updated successfully.", fail_silently=True)
             return HttpResponseRedirect(post_change_redirect)
     else:
         form = PasswordChangeForm(request.user)

@@ -14,7 +14,7 @@
 	  google.setOnLoadCallback(google.setOnLoadCallback(drawChart));
 
 	  function drawChart() {
-	  	var query = new google.visualization.Query('{%url banian.views.representation_ticket_history key=object.first_representation.key %}');
+	  	var query = new google.visualization.Query('{%if object.first_representation%}{%url banian.views.representation_ticket_history key=object.first_representation.key %}{%endif%}');
 	    query.send(handleQueryResponse);
 	  }	  
       function handleQueryResponse(response) {
@@ -125,14 +125,14 @@
       </table>      
   </fieldset>
   </td></tr></table>
-{%ifnotequal object.first_representation.status "Draft" %}
+{%if object.first_representation%} {%ifnotequal object.first_representation.status "Draft" %}
   <fieldset><legend>Event information</legend>
   <table>
   <tr><td style="width:125px"><strong>Event Value:</strong></td><td>{%if object.first_ticket_class.price%}<span id="id_value">{{object.representation_value|amountformat:object.venue.country}}</span>{%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Current Revenues:</strong></td><td>{%if object.first_ticket_class.price%}{{object.revenues|amountformat:object.venue.country}}{%else%}Free Event{%endif%}</td><td style="width:125px"><strong>Tickets Sold:</strong></td><td>{{object.tickets_sold}} / <span id="id_total_tickets">{{object.nbr_tickets}}</span></td></tr>
   <tr><td colspan="6"><div id='chart_div' style='width: 700px; height: 240px;'></div></td></tr>
   </table>  
   </fieldset>
- {%endifnotequal%}
+ {%endifnotequal%}{%endif%}
   
 {%if object.mutable %}
   <a class="sexybutton" href="{% url banian.views.edit_event key=object.key%}"><span><span><span class="edit">Edit</span></span></span></a>

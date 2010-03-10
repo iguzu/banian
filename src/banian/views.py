@@ -5,14 +5,13 @@ from google.appengine.api import images
 from google.appengine.ext import db
 from google.appengine.api.labs.taskqueue import taskqueue
 from google.appengine.api import memcache
-
+from django.contrib import messages #@UnresolvedImport
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, HttpResponseServerError, HttpResponseNotFound
 from django.views.generic.list_detail import object_list, object_detail
-from django.views.generic.create_update import delete_object, redirect
+from django.views.generic.create_update import redirect
 from django.contrib.auth.decorators import login_required
 from django.template import RequestContext, loader
-from django.contrib.auth.models import Message
 from django.utils.translation import ugettext #@UnresolvedImport
 from django.utils.simplejson import dumps
 from django.forms.forms import ValidationError
@@ -29,7 +28,7 @@ from banian.models import Venue, Event, TicketClass, Seat, Image, Representation
 from banian.utils import update_object, create_object, get_own_object_or_404, points2distance, \
                          location_window, reserve_seats, preparePayment, \
                          take_seats, calc_ticket_class_available, ElementExtracter,\
-    transfer_to_paypal, generate_tickets
+    transfer_to_paypal, generate_tickets, delete_object
 from banian.model_utils import construct_timezone_choice  , get_currency_code,\
     get_publishing_cost, get_currency_symbol
 from banian.forms import EventForm, SelectVenueForm, SettingsForm, TicketClassForm, \
@@ -70,8 +69,8 @@ def events(request):
 def show_event(request, key):
     event = get_own_object_or_404(request.user, Event, key)
     representation = event.first_representation()
-    logging.debug(repr(representation.pre_approval_status))
-    if representation.pre_approval_status == 'Processing':
+    
+    if representation and representation.pre_approval_status == 'Processing':
         logging.debug(repr('here'))
         status = banian.paypal.getPreApprovalDetails(representation.pre_approval_key)
         if status == 'Completed':
@@ -168,8 +167,7 @@ def settings(request):
         form = SettingsForm(data=request.POST, files=request.FILES, instance=user,empty_permitted=True)
         if form.is_valid():
             form.save()
-            if request.user.is_authenticated():
-                Message(user=request.user, message=ugettext("%(verbose_name)s was updated successfully.") % {"verbose_name": form._verbose_name}).put()
+            messages.success(request, "%(verbose_name)s was updated successfully." % {"verbose_name": form._verbose_name}, fail_silently=True)
             if 'redirect'in request.GET:
                 return HttpResponseRedirect(request.GET.get('redirect'))
             else:
@@ -304,22 +302,22 @@ def publish(request, key):
 
     # Validate publication
     if representation.status != 'Draft' and representation.status != 'Processing Payment':
-        Message(user=request.user, message='Event is already published').put()
+        messages.error(request, 'Event is already published')
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':event.key(),}))            
     if representation.total_cost() and (request.user.paypal_id == '' or request.user.paypal_id == None):
-        Message(user=request.user, message='Invalid PayPal account. Change your PayPal account in "My account" settings').put()
+        messages.error(request, 'Invalid PayPal account. Change your PayPal account in "My account" settings')
         return HttpResponseRedirect(reverse('banian.views.edit_event',kwargs={'key':event.key(),})+'?step=6')
     if representation.date < datetime.utcnow().replace(tzinfo=gaepytz.utc):
         # if representation is in that past, do not allow to put in sale 
-        Message(user=request.user, message='Cannot publish an event scheduled in the past. Is the event date is correct?').put()
+        messages.error(request, 'Cannot publish an event scheduled in the past. Is the event date is correct?')
         return HttpResponseRedirect(reverse('banian.views.edit_event',kwargs={'key':event.key(),})+'?step=6')
     if event.restrict_sale_period and event.endsale_date and event.endsale_date < datetime.utcnow().replace(tzinfo=gaepytz.utc):
         # if sale period is in the that past, do not allow to put in sale 
-        Message(user=request.user, message='Cannot publish an event with an sale end date in the past. Is the event endsale date is correct?').put()
+        messages.error(request, 'Cannot publish an event with an sale end date in the past. Is the event endsale date is correct?')
         return HttpResponseRedirect(reverse('banian.views.edit_event',kwargs={'key':event.key(),})+'?step=6')        
     if event.max_step < len(event_edit_form_list)-2:
         # if the user didn't through alls steps, one by one. 
-        Message(user=request.user, message='Complete all publishing steps before publishing').put()
+        messages.error(request, 'Complete all publishing steps before publishing')
         return HttpResponseRedirect(reverse('banian.views.edit_event',kwargs={'key':event.key(),})+'?step=6')        
 
     # Do publishing
@@ -362,10 +360,10 @@ def publish(request, key):
                 representation.put()
                 return transfer_to_paypal(request,"https://www.sandbox.paypal.com/webscr?cmd=_ap-preapproval&preapprovalkey=%s" % preApprovalKey)
             elif preApprovalStatus == 'invalid_account':
-                Message(user=request.user, message='Invalid PayPal account. Change your PayPal account in "My account" settings').put()
+                messages.error(request, 'Invalid PayPal account. Change your PayPal account in "My account" settings')
                 return HttpResponseRedirect(reverse('banian.views.edit_event',kwargs={'key':event.key(),})+'?step=6')
             else:
-                Message(user=request.user, message='An error has occured with paypal. Try again later').put()
+                messages.error(request, 'An error has occured with paypal. Try again later')
                 return HttpResponseRedirect(reverse('banian.views.edit_event',kwargs={'key':event.key(),})+'?step=6')            
     else:
         # Is it a tranfer back from paypal?
@@ -438,10 +436,10 @@ def unpublish_representation(request, key):
     representation = get_own_object_or_404(request.user,Representation, key)
     event = get_own_object_or_404(request.user, Event, representation.event.key())
     if Seat.all().filter('representation =', representation).filter('availability !=', 0).count() :
-        Message(user=request.user, message=ugettext("You cannot unpublish an event for which some tickets were already sold.")).put()
+        messages.error(request, "You cannot unpublish an event for which some tickets were already sold.")
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':representation.event.key(),}))
     if representation.status != 'Published' and representation.status !='On Sale' and representation.pre_approval_status != 'Processing':
-        Message(user=request.user, message=ugettext("You cannot unpublish an event that was not published first")).put()
+        messages.error(request, "You cannot unpublish an event that was not published first")
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':representation.event.key(),}))        
     if request.method == 'POST':
         job_id = str(uuid4())
@@ -588,7 +586,7 @@ def cancel_representation(request,key):
     if request.method == 'POST':
         representation.status = 'Cancelled'
         representation.put()
-        Message(user=request.user, message=ugettext("Event has been cancelled")).put()
+        messages.success(request, "Event has been cancelled")
         return HttpResponseRedirect(reverse('banian.views.show_event',kwargs={'key':str(event.key()),}))
     return render_to_response(request, 'banian/representation_cancel_confirm.html', extra)
 
@@ -654,7 +652,7 @@ def buy_representation(request, key):
                 status,paykey = preparePayment(request, representation, data, transaction)
                 if status != 'Created':
                     taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=300)
-                    Message(user=request.user, message=ugettext("An error occured while preparing your payment")).put()
+                    messages.error(request, "An error occured while preparing your payment")
                     return HttpResponseRedirect(reverse('banian.views.purchase_failure') + '?errorcode=' + str(status))
                 else:
                     transaction.payment_key = paykey
@@ -676,7 +674,7 @@ def buy_representation(request, key):
             except:
                 taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=0)
                 logging.critical(repr(sys.exc_info()))
-                Message(user=request.user, message=ugettext("Seat could not be reserved try again in few minutes...")).put()
+                messages.error(request, "Seat could not be reserved try again in few minutes...")
                 return HttpResponseRedirect(reverse('banian.views.buy_representation',kwargs={'key':representation.key(),}))
             
             ## Phase 4, if payment required, transfer the user to paypal to execute the payment

@@ -492,9 +492,46 @@ class VADEEventTestCase(TestCase):
         self.assertEqual(r.status_code,200)
         MarkupValidation(self,r.content)
 
-    def addEvent(self):
-        ## validate that the validators are in
-        pass
+    def testAddEventPage1(self):
+        r = self.client.get(reverse('banian.views.add_event'))
+        self.assertEqual(r.status_code,200)
+        r = self.client.post(reverse('banian.views.add_event'),
+                             {'name':'New Event',
+                              'description':'Description here',
+                              'web_site':'www.iguzu.com',
+                              'email':'info@iguzu.com',
+                              'next':'next'
+                              },follow=True)
+        self.assertEqual(r.status_code,200)
+        formValidation(self,r)
+        e = models.Event.all().filter('name =','New Event').get()
+        self.assertTrue(e)
+        MarkupValidation(self,r.content)        
+        r = self.client.get(reverse('banian.views.show_event',kwargs={'key':e.key()}))
+        self.assertEqual(r.status_code,200)
+        MarkupValidation(self,r.content)
+
+
+    def testAddEventPage2(self):
+        r = self.client.get(reverse('banian.views.add_event'))
+        self.assertEqual(r.status_code,200)
+        r = self.client.post(reverse('banian.views.add_event'),
+                             {'name':'New Event',
+                              'description':'Description here',
+                              'web_site':'www.iguzu.com',
+                              'email':'info@iguzu.com',
+                              'next':'next'
+                              },follow=True)
+        self.assertEqual(r.status_code,200)
+        formValidation(self,r)
+        e = models.Event.all().filter('name =','New Event').get()
+        self.assertTrue(e)
+        MarkupValidation(self,r.content)        
+        r = self.client.get(reverse('banian.views.show_event',kwargs={'key':e.key()}))
+        self.assertEqual(r.status_code,200)
+        MarkupValidation(self,r.content)
+
+
 
     def testPage1(self):
         e = models.Event.all().filter('name =','Test Event').get()
@@ -512,6 +549,9 @@ class VADEEventTestCase(TestCase):
         self.assertEqual(r.status_code,200)
         e = models.Event.all().filter('name =','name changed').get()
         self.assertTrue(e)
+        MarkupValidation(self,r.content)
+        r = self.client.get(reverse('banian.views.show_event',kwargs={'key':e.key()}))
+        self.assertEqual(r.status_code,200)
         MarkupValidation(self,r.content)
 
     def testPage2(self):

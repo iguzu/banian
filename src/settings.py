@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #@PydevCodeAnalysisIgnore
 from ragendja.settings_pre import *
-
+from django.contrib.messages import constants as message_constants
 # Increase this when you update your media on the production site, so users
 # don't have to refresh their cache. By setting this your MEDIA_URL
 # automatically becomes /media/MEDIA_VERSION/
@@ -60,6 +60,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.request',
     'django.core.context_processors.i18n',
     'banian.context_processors.menu',
+    'django.contrib.messages.context_processors.messages',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -76,6 +77,7 @@ MIDDLEWARE_CLASSES = (
     'ragendja.sites.dynamicsite.DynamicSiteIDMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 # Google authentication
@@ -86,8 +88,12 @@ AUTH_ADMIN_MODULE = 'registration.admin'
 # User Extension module
 AUTH_USER_MODULE = 'registration.models'
 
-
-
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+MESSAGE_TAGS = {message_constants.DEBUG: 'notice',
+                message_constants.INFO: 'notice',
+                message_constants.SUCCESS: 'success',
+                message_constants.WARNING: 'notice',
+                message_constants.ERROR: 'error',}
 
 LOGIN_URL = '/account/login/'
 LOGOUT_URL = '/account/logout/'
@@ -111,6 +117,7 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'django.contrib.redirects',
     'django.contrib.sites',
+    'django.contrib.messages',
     'appenginepatcher',
     'ragendja',
     'banian',

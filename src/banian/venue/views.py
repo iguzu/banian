@@ -4,10 +4,9 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect #@UnusedImport
 from django.template import RequestContext, loader
 from django.views.generic.list_detail import object_list, object_detail
-from django.views.generic.create_update import delete_object #@UnresolvedImport
 from django.contrib.auth.decorators import login_required
 
-from banian.utils import update_seat_config, update_seat_group
+from banian.utils import update_seat_config, update_seat_group, delete_object
 from banian.models import Venue, SeatConfiguration, SeatGroup, Event
 from banian.venue.forms import VenueForm, SeatConfigurationForm, SeatGroupForm
 from banian.utils import update_object, create_object, get_own_object_or_404
