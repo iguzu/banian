@@ -1084,8 +1084,6 @@ class SearchEventTestCase(TestCase):
         self.user.put()
 
         r = self.client.get(reverse('banian.views.search_events'))
-        logging.debug(r.context['event_list'][0].distance)
-
         self.assertEqual(len(r.context['event_list']),1)
         self.user.preferred_distance = 9
         self.user.put()
@@ -1406,7 +1404,7 @@ class PublishTestCase(TestCase):
     def testTicketPreview(self):
         e = addEvent(self,self.user,'test',nbr_seat=10)
         e = publishEvent(self, e)
-        r = self.client.get(reverse('banian.views.preview_ticket',kwargs={'key':e.first_representation().key()}))
+        r = self.client.get(reverse('banian.views.preview_ticket',kwargs={'key':e.key()}),follow=True)
         self.assertEqual(r.status_code,200)
         MarkupValidation(self, r.content)
 
@@ -1414,7 +1412,7 @@ class PublishTestCase(TestCase):
     def testSalePagePreview(self):
         e = addEvent(self,self.user,'test',nbr_seat=10)
         e = publishEvent(self, e)
-        r = self.client.get(reverse('banian.views.preview_sale_page',kwargs={'key':e.first_representation().key()}))
+        r = self.client.get(reverse('banian.views.preview_sale_page',kwargs={'key':e.key()}),follow=True)
         self.assertEqual(r.status_code,200)
         MarkupValidation(self, r.content)
 
@@ -1436,8 +1434,6 @@ class UnpublishTestCase(TestCase):
         r = self.client.post(reverse('banian.views.unpublish_representation', kwargs={'key':str(self.e.first_representation().key())}),follow=True)
         self.assertEqual(r.status_code, 200)
         c,f = run_tasks(lapse=60)
-        logging.debug(repr(c))
-        logging.debug(repr(f))
         event = db.get(self.e.key())
         self.assertEqual(event.visibility,'Draft',"event:%s\nrepresentation:%s" % (repr(event),repr(event.first_representation())))
         self.assertEqual(models.Seat.all().filter('representation =',event.first_representation()).get(),None)
@@ -2214,8 +2210,7 @@ class TransactionTestCase(TestCase):
         eventB = publishEvent(self, eventB)
         buyTickets(self, eventB.first_representation(), 5)
         buyTickets(self, eventB.first_representation(), 5)        
-        transactions = models.Transaction.all().filter('owner = ',self.user).filter('representation =',eventB.first_representation()).fetch(1000)
-        logging.debug(models.Transaction.all().count(100))        
+        transactions = models.Transaction.all().filter('owner = ',self.user).filter('representation =',eventB.first_representation()).fetch(1000)        
         self.assertEqual(len(transactions),2)
         for transaction in transactions:
             r = self.client.get(reverse('banian.views.show_transaction',kwargs={'key':str(transaction.key()),}))
@@ -2712,7 +2707,6 @@ class CloseRepresentationTestCase(TestCase):
         e = publishEvent(self, e)
         self.assertEqual(e.first_representation().status,'Published')
         r= self.client.get(reverse('banian.tasks.views.schedule_close_representations'))
-        logging.debug(r.content)
         self.assertContains(r,'Nothing to do')
         run_tasks(lapse=30)
         rep = models.Representation.get(e.first_representation().key())
@@ -2799,7 +2793,6 @@ class UpdateRepresentationHistoryTestCase(TestCase):
         self.assertEqual(len(representation.histo_ticket),1)
         self.assertEqual(len(representation.histo_ticket),1)
         representation.timestamp_available = representation.timestamp_available - timedelta(days=1,minutes=2)
-        logging.debug(repr(representation.timestamp_available))
         memcache.set(str(representation.key()) + '-ticket_sold_timestamp',representation.timestamp_available)
         representation.put() 
         r= self.client.get(reverse('banian.tasks.views.update_representation_history'))
@@ -2862,7 +2855,5 @@ class RepresentationTicketHistoryCase(TestCase):
     def testBasicHistory(self):
         r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':self.e.first_representation().key()}),follow=True)
         self.assertEqual(r.status_code,200)
-        logging.debug(repr(r.content))
         r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':str(self.e.first_representation().key()) + '?format=%s' % 'JavaScript'}),follow=True)
         self.assertEqual(r.status_code,404)
-        logging.debug(repr(r.content))

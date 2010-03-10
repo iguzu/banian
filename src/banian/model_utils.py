@@ -121,10 +121,7 @@ def calc_representation_revenues(representation):
 def calc_ticket_class_nbr_seat(ticketclass):
     nbr_seat = 0
     for sgkey in ticketclass.seat_groups:
-        try:
-            nbr_seat += banian.models.SeatGroup.get(sgkey).nbr_seat
-        except:
-            logging.debug('not good')
+        nbr_seat += banian.models.SeatGroup.get(sgkey).nbr_seat
     nbr_seat = nbr_seat
     return nbr_seat
 

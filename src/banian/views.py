@@ -71,7 +71,6 @@ def show_event(request, key):
     representation = event.first_representation()
     
     if representation and representation.pre_approval_status == 'Processing':
-        logging.debug(repr('here'))
         status = banian.paypal.getPreApprovalDetails(representation.pre_approval_key)
         if status == 'Completed':
             representation.pre_approval_status = 'Completed'
@@ -744,7 +743,6 @@ def show_transaction(request, key):
     transaction = get_own_object_or_404(request.user, Transaction, key)
     if transaction.payment_status == 'Processing':
         status = banian.paypal.getPaymentDetail(transaction.payment_key)
-        logging.debug(repr(status))
         if status == 'Completed':
             transaction.payment_status = 'Completed'
             transaction.put()
@@ -864,7 +862,6 @@ def edit_event(request,key):
 
 def redirect_url(request):
     redirect = request.GET['redirect']
-    logging.debug(repr(redirect))
     url = urllib.unquote(redirect)
     return HttpResponseRedirect(url)
 

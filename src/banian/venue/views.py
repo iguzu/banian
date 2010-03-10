@@ -51,8 +51,6 @@ def delete_venue(request, key):
     venue = get_own_object_or_404(request.user,Venue,key)
     if not venue.mutable():
         return HttpResponseForbidden()
-    logging.debug(venue.poster_image.key())
-    logging.debug(venue.thumbnail_image.key())
     return delete_object(request, Venue, object_id=key,
         post_delete_redirect=reverse('banian.venue.views.venues'))
 
