@@ -22,8 +22,8 @@
 {% if form.errors %}<div class="error">{{ form.errors }}</div>{% endif %}
 <fieldset><legend>What image to put on ticket and purchase page?</legend>
 <table>
-         <tr><td><label for="id_thumbnail">{{form.thumbnail.label}}:</label><br>{% if form.instance.thumbnail_image %}{{ form.instance.thumbnail_image.filename}}<br> <img src="{% url banian.views.image key=form.instance.thumbnail_image.key %}?small=" alt="{{form.instance.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.thumbnail}}<br>{{form.thumbnail.help_text}}</td></tr>
-         <tr><td><label for="id_poster">{{form.poster.label}}:</label><br>{% if form.instance.poster_image %}{{form.instance.poster_image.filename}}<br><img src="{% url banian.views.image key=form.instance.poster_image.key %}?small=" alt="{{form.instance.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/BlueMonster50px.gif" alt="no image">{%endif%}</td><td>{{form.poster}}<br>{{form.poster.help_text}}</td></tr>
+         <tr><td><label for="id_thumbnail">{{form.thumbnail.label}}:</label><br>{% if form.instance.thumbnail_image %}{{ form.instance.thumbnail_image.filename}}<br> <img src="{% url banian.views.image key=form.instance.thumbnail_image.key %}?small=" alt="{{form.instance.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/bluedog50px.jpg" alt="no image">{%endif%}</td><td>{{form.thumbnail}}<br>{{form.thumbnail.help_text}}</td></tr>
+         <tr><td><label for="id_poster">{{form.poster.label}}:</label><br>{% if form.instance.poster_image %}{{form.instance.poster_image.filename}}<br><img src="{% url banian.views.image key=form.instance.poster_image.key %}?small=" alt="{{form.instance.name}}">{%else%}<img src=" {{ MEDIA_URL }}global/bluedog50px.jpg" alt="no image">{%endif%}</td><td>{{form.poster}}<br>{{form.poster.help_text}}</td></tr>
 
          <tr><td><label for="id_note">{{form.note.label}}:</label></td><td>{{form.note}}</td></tr>
 </table>

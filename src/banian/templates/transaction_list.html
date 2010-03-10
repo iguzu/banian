@@ -3,21 +3,22 @@
 {% block title %}transaction List{% endblock %}
 {% block content-leftpane %}
 <h2>My Transactions</h2>
-    {% if is_paginated %}
- <ul id="pagination-digg-top">
+ {% if is_paginated %}
+<div style="margin-top:10px;">
  {% if has_previous %}
- <li class="previous"><a href="?page={{ previous }}">&lt;&lt; Newer</a></li>
+<a href="?page={{ previous }}"><img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_previous.png" alt="Previous" /></a>
  {% else %}
- <li class="previous-off">&lt;&lt; Newer</li>
+<img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_previous.png" alt="Previous" />
  {% endif %}
-<li class="active">{{ page }} of {{ pages}}</li>
+{{ page }} of {{ pages}}
 {% if has_next %}
- <li class="next"><a href="?page={{ next }}">Older &gt;&gt;</a></li>
+<a href="?page={{ next }}"><img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_next.png" alt="Next" /></a>
  {% else %}
- <li class="next-off">Older &gt;&gt;</li>
+<img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_next.png" alt="Next" />
  {% endif %}
- </ul><br>
+</div>
  {% endif %}
+
 	<table class="list">
      <thead>
 	  <tr><th>Transaction</th><th>Date</th><th>Event</th><th>Tickets</th><th>Amount</th></tr>
@@ -38,21 +39,19 @@
     </table>
  
  {% if is_paginated %}
- <ul id="pagination-digg-bottom">
+<div style="margin-top:10px;">
  {% if has_previous %}
- <li class="previous"><a href="?page={{ previous }}">&lt;&lt; Newer</a></li>
+<a href="?page={{ previous }}"><img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_previous.png" alt="Previous" /></a>
  {% else %}
- <li class="previous-off">&lt;&lt; Newer</li>
+<img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_previous.png" alt="Previous" />
  {% endif %}
-<li class="active">{{ page }} of {{ pages}}</li>
+{{ page }} of {{ pages}}
 {% if has_next %}
- <li class="next"><a href="?page={{ next }}">Older &gt;&gt;</a></li>
+<a href="?page={{ next }}"><img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_next.png" alt="Next" /></a>
  {% else %}
- <li class="next-off">Older &gt;&gt;</li>
+<img src="{{MEDIA_URL}}global/sexybuttons/images/icons/silk/resultset_next.png" alt="Next" />
  {% endif %}
- </ul>
+</div>
  {% endif %}
- 
 
- <p></p>
 {% endblock %}
