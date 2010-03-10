@@ -19,14 +19,13 @@ import gaepytz
 from google.appengine.api import images
 from google.appengine.ext import db
 
-
+from django.contrib import messages #@UnresolvedImport
 from django.template import RequestContext, loader
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core.xheaders import populate_xheaders
 from django.utils.translation import ugettext #@UnresolvedImport
 from django.contrib.auth.views import redirect_to_login
 from django.http import Http404
-from django.contrib.auth.models import Message
 from django.views.generic.create_update import lookup_object, get_model_and_form_class, redirect, apply_extra_context
 from ragendja.dbutils import get_object #@UnresolvedImport
 from banian.models import google_images, Image, Seat, SeatGroup, fetch_limit,\
@@ -70,8 +69,9 @@ def create_object(request, model=None, template_name=None,
         form = form_class(**kwargs)
         if form.is_valid():
             new_object = form.save()
-            if request.user.is_authenticated():
-                Message(user=request.user, message=ugettext("The %(verbose_name)s was created successfully.") % {"verbose_name": model._meta.verbose_name}).put()
+            msg = ugettext("The %(verbose_name)s was created successfully.") %\
+                                    {"verbose_name": model._meta.verbose_name}
+            messages.success(request, msg, fail_silently=True)
             return redirect(post_save_redirect, new_object)
     else:
         form = form_class(**kwargs)
@@ -117,8 +117,9 @@ def update_object(request, model=None, object_id=None, slug=None,
         form = form_class(**kwargs)
         if form.is_valid():
             obj = form.save()
-            if request.user.is_authenticated():
-                Message(user=request.user, message=ugettext("The %(verbose_name)s was updated successfully.") % {"verbose_name": model._meta.verbose_name}).put()
+            msg = ugettext("The %(verbose_name)s was updated successfully.") %\
+                                    {"verbose_name": model._meta.verbose_name}
+            messages.success(request, msg, fail_silently=True)
             return redirect(post_save_redirect, obj)
     else:
         form = form_class(**kwargs)
@@ -134,6 +135,49 @@ def update_object(request, model=None, object_id=None, slug=None,
     response = HttpResponse(t.render(c))
     populate_xheaders(request, response, model, obj.key())
     return response
+
+
+def delete_object(request, model, post_delete_redirect, object_id=None,
+        slug=None, slug_field='slug', template_name=None,
+        template_loader=loader, extra_context=None, login_required=False,
+        context_processors=None, template_object_name='object'):
+    """
+    Generic object-delete function.
+
+    The given template will be used to confirm deletetion if this view is
+    fetched using GET; for safty, deletion will only be performed if this
+    view is POSTed.
+
+    Templates: ``<app_label>/<model_name>_confirm_delete.html``
+    Context:
+        object
+            the original object being deleted
+    """
+    if extra_context is None: extra_context = {}
+    if login_required and not request.user.is_authenticated():
+        return redirect_to_login(request.path)
+
+    obj = lookup_object(model, object_id, slug, slug_field)
+
+    if request.method == 'POST':
+        obj.delete()
+        msg = ugettext("The %(verbose_name)s was deleted.") %\
+                                    {"verbose_name": model._meta.verbose_name}
+        messages.success(request, msg, fail_silently=True)
+        return HttpResponseRedirect(post_delete_redirect)
+    else:
+        if not template_name:
+            template_name = "%s/%s_confirm_delete.html" % (model._meta.app_label, model._meta.object_name.lower())
+        t = template_loader.get_template(template_name)
+        c = RequestContext(request, {
+            template_object_name: obj,
+        }, context_processors)
+        apply_extra_context(extra_context, c)
+        response = HttpResponse(t.render(c))
+        populate_xheaders(request, response, model, obj.key())
+        return response
+
+
 
 def update_seat_config(seat_configuration):
     seat_configuration.nbr_seat = 0
@@ -353,7 +397,7 @@ def generate_tickets(request,transaction):
             #TODO: if all tickets are general admission, try to get another seat.
             taskqueue.add(url='/tasks/clean_reservation/', params={'reservation':transaction.reservation, 'representation':transaction.representation.key()}, countdown=0)
             taskqueue.add(url='/tasks/reverse_transaction/', params={'transaction':transaction.key()}, countdown=0)
-            Message(user=request.user, message=ugettext("Unable to finalize, transaction will be reversed...")).put()
+            messages.error("Unable to finalize, transaction will be reversed...")
             return 'unable_take_seats'
 
         if not memcache.get(str(transaction.representation.key()) + '-ticket_sold_timestamp'): #@UndefinedVariable
