@@ -33,7 +33,6 @@ from banian.models import google_images, Image, Seat, SeatGroup, fetch_limit,\
 from django.core.urlresolvers import reverse
 from banian.model_utils import get_currency_code
 
-
 def auto_loader():
     logging.debug('adding task')
     taskqueue.add(url='/tasks/auto_load/', countdown=0)

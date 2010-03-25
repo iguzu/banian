@@ -550,8 +550,11 @@ class QEWhenForm(ModelForm):
     def clean(self):
         if 'date' in self.changed_data or 'time' in self.changed_data :
             if 'date' in self.cleaned_data and 'time' in self.cleaned_data :
+                logging.debug(repr(self.cleaned_data['date']))
+                logging.debug(repr(self.cleaned_data['time']))
                 self.cleaned_data['date'] = datetime.combine(self.cleaned_data['date'],
                                                              self.cleaned_data['time']).replace(tzinfo=gaepytz.timezone(self.cleaned_data['timezone']))
+                logging.debug(repr(self.cleaned_data['date']))
         if self.cleaned_data['limit_duration'] == True and self.cleaned_data['duration'] == 0:
             raise ValidationError('Event duration cannot be zero')
         return self.cleaned_data

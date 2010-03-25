@@ -1,9 +1,53 @@
-{% extends 'contentbase.html' %}
+{% extends "contentbase.html" %}
 {% block title %}home{% endblock %}
 {% block extra-head %}
 {% endblock %}
 {% block body-tag %}<body>{% endblock %}
 {% block content-leftpane %}
-<p class="span-24" style="text-align:center"><img src="{{ MEDIA_URL }}global/iphone_home_small.gif" alt="Cancel" ></p><br>
-<h3 class="span-24" style="text-align:center">Soon coming on the iPhone</h3>
+{% if not user.is_authenticated %}
+<div class="span-18 last">
+<p><strong>Iguzu is a social network for organizing events, buying and selling tickets. Our mission is to offer our members a no frill platform, providing flexibility, simplicity and transparency.</strong>
+<br>
+<br>
+</p>
+</div>
+<div class="span-9">
+<fieldset><legend></legend>
+<div style="height:350px">
+<h1>For Organizers</h1>
+<h2>Publish Events</h2>
+<p>Publish your events online in minutes and automatically send an email invitation </p>
+<h2>Sell Tickets</h2>
+<p>Sell tickets and collect receipt from sales immediately via paypal (No merchant account required)</p>
+<h2>Manage Events</h2>
+<p>Track your sales online, see who purchased tickets, issue refund/partial refund</p>
+<h2>Validate Tickets</h2>
+<p>Validate printed or iPhone tickets at your event door using iguzu ticket scanner iPhone app</p>
+</div>
+<a href="" class="sexybutton sexysimple sexyblue">More info</a>
+</fieldset>
+</div>
+<div class="span-9 last">
+<fieldset><legend></legend>
+<div style="height:350px">
+<h1>For Ticket Holders</h1>
+<h2>Buy Tickets</h2>
+<p>Buy tickets in seconds using secure payments via Paypal</p>
+<h2>Manage Tickets</h2>
+<p>Print your ticket at home or download your tickets to your iPhone</p>
+<h2>Sell or Transfer Tickets</h2>
+<p>You can't attend an event? transfer/sell your ticket to a friend in seconds and collect your money via Paypal (no paypal merchant account required)</p>
+</div>
+<a href="" class="sexybutton sexysimple sexyblue">More info</a>
+</fieldset>
+</div>
+{% endif %}
+{% endblock %}
+{% block content-rightpane %}
+{% if not user.is_authenticated %}
+  <fieldset><legend>Register</legend>
+<h2>I would like to become a member!</h2><br><p>Registering takes only 30 seconds!</p>
+<a href="{% url registration.views.register %}"class="sexybutton sexysimple sexyblue">Register Now!</a>
+  </fieldset>
+{%endif%}
 {% endblock %}
