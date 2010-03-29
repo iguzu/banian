@@ -8,7 +8,6 @@ admin.autodiscover() #@UndefinedVariable
 handler500 = 'ragendja.views.server_error'
 # auth_patterns +
 urlpatterns =  patterns('',
-    ('^C5jCnPsm8ixSMXxEdd/(.*)', admin.site.root), #@UndefinedVariable
-    (r'^help/', include('help.urls')),    
+    ('^C5jCnPsm8ixSMXxEdd/(.*)', admin.site.root), #@UndefinedVariable    
     (r'^', include('banian.urls')),
 ) + urlpatterns

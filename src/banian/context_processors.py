@@ -29,12 +29,12 @@ menu_autenticated = [
       sub_menu=[Menu('Account Settings',reverse('banian.views.settings')),
                 Menu('Change Password',reverse('registration.views.password_change')),]),
  Menu('Log Out',reverse('django.contrib.auth.views.logout')),
- Menu('Help',reverse('help.views.list_entries')),            
+ Menu('Help','/help/'),            
  ]
 
 menu_anonymous = [Menu('Home',reverse('banian.views.default')),
                       Menu('Register',reverse('registration.views.register')),
-                      Menu('Help',reverse('help.views.list_entries')),            
+                      Menu('Help','/help/'),      
                       ]
 
 def find_menu(menu,path):

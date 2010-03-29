@@ -6,9 +6,9 @@
 {% block content-leftpane %}
 {% if not user.is_authenticated %}
 <div class="span-18 last">
+<fieldset><legend></legend>
 <p><strong>Iguzu is a social network for organizing events, buying and selling tickets. Our mission is to offer our members a no frill platform, providing flexibility, simplicity and transparency.</strong>
-<br>
-<br>
+</fieldset>
 </p>
 </div>
 <div class="span-9">
@@ -45,7 +45,7 @@
 {% endblock %}
 {% block content-rightpane %}
 {% if not user.is_authenticated %}
-  <fieldset><legend>Register</legend>
+  <fieldset><legend></legend>
 <h2>I would like to become a member!</h2><br><p>Registering takes only 30 seconds!</p>
 <a href="{% url registration.views.register %}"class="sexybutton sexysimple sexyblue">Register Now!</a>
   </fieldset>

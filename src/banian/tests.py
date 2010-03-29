@@ -2857,3 +2857,18 @@ class RepresentationTicketHistoryCase(TestCase):
         self.assertEqual(r.status_code,200)
         r= self.client.get(reverse('banian.views.representation_ticket_history',kwargs={'key':str(self.e.first_representation().key()) + '?format=%s' % 'JavaScript'}),follow=True)
         self.assertEqual(r.status_code,404)
+
+
+class FlatPageTestCase(TestCase):
+    def setUp(self):
+        pass
+    def testAbout(self):
+        r= self.client.get('/about/')
+        self.assertEqual(r.status_code,200)
+    def testPrivacy(self):
+        r= self.client.get('/privacy/')
+        self.assertEqual(r.status_code,200)
+    def testHelp(self):
+        r= self.client.get('/help/')
+        self.assertEqual(r.status_code,200)
+        

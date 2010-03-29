@@ -6,7 +6,6 @@ from django.contrib.messages import constants as message_constants
 # don't have to refresh their cache. By setting this your MEDIA_URL
 # automatically becomes /media/MEDIA_VERSION/
 MEDIA_VERSION = 1
-
 # By hosting media on a different domain we can get a speedup (more parallel
 # browser connections).
 #if on_production_server or not have_appserver:
@@ -123,7 +122,6 @@ INSTALLED_APPS = (
     'banian',
     'registration',
     'mediautils',
-    'help',
 )
 
 # List apps which should be left out from app settings and urlsauto loading
