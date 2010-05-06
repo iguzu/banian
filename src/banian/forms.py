@@ -175,8 +175,9 @@ class EventForm(ModelForm):
                     timezone = self.instance.venue.timezone
                 else:
                     timezone = self._venue.timezone
-                self.cleaned_data['onsale_date'] = datetime.combine(self.cleaned_data['onsale_date'],
-                                                   self.cleaned_data['onsale_time']).replace(tzinfo=gaepytz.timezone(timezone))
+                tz = gaepytz.timezone(timezone)
+                naive_datetime = datetime.combine(self.cleaned_data['onsale_date'],self.cleaned_data['onsale_time'])
+                self.cleaned_data['onsale_date'] = tz.localize(naive_datetime)
                 if self.instance:
                     first_representation = Representation.all().filter('event = ',self.instance).order('date').get()
                     if first_representation:
@@ -328,8 +329,9 @@ class RepresentationForm(ModelForm):
                     timezone = self.instance.venue.timezone
                 else:
                     timezone = self._event.venue.timezone
-                self.cleaned_data['date'] = datetime.combine(self.cleaned_data['date'],
-                                                             self.cleaned_data['time']).replace(tzinfo=gaepytz.timezone(timezone))
+                tz = gaepytz.timezone(timezone)
+                naive_datetime = datetime.combine(self.cleaned_data['date'], self.cleaned_data['time'])
+                self.cleaned_data['date'] = tz.localize(naive_datetime)
         return self.cleaned_data
 
     def save(self):
@@ -550,11 +552,9 @@ class QEWhenForm(ModelForm):
     def clean(self):
         if 'date' in self.changed_data or 'time' in self.changed_data :
             if 'date' in self.cleaned_data and 'time' in self.cleaned_data :
-                logging.debug(repr(self.cleaned_data['date']))
-                logging.debug(repr(self.cleaned_data['time']))
-                self.cleaned_data['date'] = datetime.combine(self.cleaned_data['date'],
-                                                             self.cleaned_data['time']).replace(tzinfo=gaepytz.timezone(self.cleaned_data['timezone']))
-                logging.debug(repr(self.cleaned_data['date']))
+                tz = gaepytz.timezone(self.cleaned_data['timezone'])
+                naive_datetime = datetime.combine(self.cleaned_data['date'],self.cleaned_data['time'])
+                self.cleaned_data['date'] = tz.localize(naive_datetime)                                                                                                                     
         if self.cleaned_data['limit_duration'] == True and self.cleaned_data['duration'] == 0:
             raise ValidationError('Event duration cannot be zero')
         return self.cleaned_data
@@ -677,15 +677,15 @@ class QEOptionsForm(ModelForm):
     def clean(self):
         if 'onsale_date' in self.changed_data or 'onsale_time' in self.changed_data :
             if 'onsale_date' in self.cleaned_data and 'onsale_time' in self.cleaned_data :
-                timezone = self.instance.venue.timezone
-                self.cleaned_data['onsale_date'] = datetime.combine(self.cleaned_data['onsale_date'],
-                                                             self.cleaned_data['onsale_time']).replace(tzinfo=gaepytz.timezone(timezone))
+                tz = gaepytz.timezone(self.instance.venue.timezone)
+                naive_datetime = datetime.combine(self.cleaned_data['onsale_date'], self.cleaned_data['onsale_time'])
+                self.cleaned_data['onsale_date'] = tz.localize(naive_datetime)
 
         if 'endsale_date' in self.changed_data or 'endsale_time' in self.changed_data :
             if 'endsale_date' in self.cleaned_data and 'endsale_time' in self.cleaned_data :
-                timezone = self.instance.venue.timezone
-                self.cleaned_data['endsale_date'] = datetime.combine(self.cleaned_data['endsale_date'],
-                                                             self.cleaned_data['endsale_time']).replace(tzinfo=gaepytz.timezone(timezone))
+                tz = gaepytz.timezone(self.instance.venue.timezone)
+                naive_datetime = datetime.combine(self.cleaned_data['endsale_date'],self.cleaned_data['endsale_time'])
+                self.cleaned_data['endsale_date'] = tz.localize(naive_datetime)
         return self.cleaned_data
 
 

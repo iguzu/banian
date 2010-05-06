@@ -214,6 +214,7 @@ def addEvent(testcase,owner,name,date=None,onsale_date=None, endsale_date=None,r
     max_step = max_step or len(event_edit_form_list)-2
 
     timezone = timezone or 'America/Montreal'
+    tz = gaepytz.timezone(timezone)
     if not address:
         address = '59 Sainte-Catherine Street East, Montreal Quebec H2X 1K5'
         location =  db.GeoPt(45.510569,-73.5632057)
@@ -222,10 +223,10 @@ def addEvent(testcase,owner,name,date=None,onsale_date=None, endsale_date=None,r
         lat, lon, address_name, short_address, country = ValidateLocation(address=address) #@UnusedVariable
         location = db.GeoPt(lat,lon)
     if date:
-        date_inc = (date - datetime.now().replace(tzinfo=gaepytz.timezone(timezone))).days
+        date_inc = (date - tz.localize(datetime.now())).days
     else:
         date_inc = random.randint(3,360)
-        date = datetime.now().replace(tzinfo=gaepytz.timezone(timezone)) + timedelta(days=date_inc)
+        date = tz.localize(datetime.now()) + timedelta(days=date_inc)
     if onsale_date:
         onsale_inc = (date - onsale_date).days
     else:
@@ -577,7 +578,8 @@ class VADEEventTestCase(TestCase):
         self.assertTrue(e)
         r = self.client.get(reverse('banian.views.edit_event',kwargs={'key':e.key()})+'?step=2')
         self.assertEqual(r.status_code,200)
-        now = datetime.now().replace(tzinfo=gaepytz.timezone(e.venue.timezone),second=0,microsecond=0) + timedelta(days=2)
+        tz = gaepytz.timezone(e.venue.timezone)
+        now = tz.localize(datetime.now()).replace(second=0,microsecond=0) + timedelta(days=2)
         date =  '%02d/%02d/%4d' % (now.month,now.day,now.year)
         time = '%02d:%02d' % (now.hour,now.minute)
         
@@ -593,6 +595,8 @@ class VADEEventTestCase(TestCase):
         e = models.Event.all().filter('name =','Test Event').get()
         self.assertEqual(e.first_representation().date,now)
         self.assertEqual(e.first_representation().timezone,'America/Montreal')
+        self.assertEqual(date,'%02d/%02d/%4d' % (e.first_representation().date.month,e.first_representation().date.day,e.first_representation().date.year))
+        self.assertEqual(time,'%02d:%02d' % (e.first_representation().date.hour,e.first_representation().date.minute))
         self.assertEqual(e.venue.timezone,'America/Montreal')
         self.assertTrue(e)
         MarkupValidation(self,r.content)
@@ -617,7 +621,9 @@ class VADEEventTestCase(TestCase):
         self.assertTrue(e)
         r = self.client.get(reverse('banian.views.edit_event',kwargs={'key':e.key()})+'?step=4')
         self.assertEqual(r.status_code,200)
-        date = datetime.now().replace(tzinfo=gaepytz.timezone(e.venue.timezone),second=0,microsecond=0) + timedelta(days=10)
+        tz = gaepytz.timezone(e.venue.timezone)
+        date = tz.localize(datetime.now()) + timedelta(days=10)
+        date = date.replace(second=0,microsecond=0)
         r = e.first_representation()
         r.date = date
         r.put()
@@ -643,6 +649,10 @@ class VADEEventTestCase(TestCase):
         formValidation(self,r)
         self.assertEqual(r.status_code,200)
         e = models.Event.all().filter('name =','Test Event').get()
+        self.assertEqual(onsale_date,'%02d/%02d/%4d' % (e.onsale_date.month,e.onsale_date.day,e.onsale_date.year))
+        self.assertEqual(onsale_time,'%02d:%02d' % (e.onsale_date.hour,e.onsale_date.minute))
+        self.assertEqual(endsale_date,'%02d/%02d/%4d' % (e.endsale_date.month,e.endsale_date.day,e.endsale_date.year))
+        self.assertEqual(endsale_time,'%02d:%02d' % (e.endsale_date.hour,e.endsale_date.minute))
         self.assertEqual(e.onsale_date,onsale)
         self.assertEqual(e.endsale_date,endsale)
         self.assertTrue(e)
