@@ -414,7 +414,11 @@ def generate_error_report(user, representation, reservation, data):
         raise AssertionError('Not Implemented')
     
 def calc_ticket_class_available(owner,ticketclass, representation):
-    count = representation.get_ticketclass_available()[str(ticketclass.key())]
+    data = representation.get_ticketclass_available();
+    if data:
+        count = data[str(ticketclass.key())]
+    else:
+        count = 0
     if count == 1:
         total_available_text = '(1 ticket left)'
     elif count == 0:

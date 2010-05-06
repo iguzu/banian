@@ -439,8 +439,10 @@ class Representation(GeoModel):
         return self._revenues
 
     def get_ticketclass_available(self):
-        data = simplejson.loads(self.tc_available)
-        return data
+        if self.tc_available: 
+            return simplejson.loads(self.tc_available)
+        else:
+            return None
     
     def set_ticketclass_available(self,data):
         self.tc_available = simplejson.dumps(data)
