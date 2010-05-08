@@ -585,5 +585,15 @@ def update_representation_history(request):
 
 
 def auto_load(request):
-    taskqueue.add(url='/tasks/auto_load/', countdown=60)
+    logging.debug(repr(request.META))
+    task_name_id = request.META.get('HTTP_X_APPENGINE_TASKNAME',None)
+    task_id = memcache.get('auto-load-id') or 0
+    if not task_name_id:
+        taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=60)
+        memcache.set('auto-load-id',task_id+1)
+    elif int(task_name_id) >= task_id:
+        logging.debug(task_name_id)
+        logging.debug(task_id)
+        taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=60)
+        memcache.set('auto-load-id',task_id+1)
     return HttpResponse("Completed")
