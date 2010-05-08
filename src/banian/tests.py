@@ -168,7 +168,7 @@ def buyTickets(testcase,representation,tickets=None):
 def MarkupValidation(testcase,response_content):
     payload = urllib.urlencode({'fragment':response_content,'direct-charset':'(detect automatically)','direct-doctype':'Inline','group':0,'direct_prefill_no':'0','prefill_doctype':'html401'})
     if not models.offline_mode:
-        rv = urlfetch.fetch('http://validator.w3.org/check',method=urlfetch.POST,payload=payload)
+        rv = urlfetch.fetch('http://validator.w3.org/check',method=urlfetch.POST,payload=payload,deadline=10)
         if rv.headers['x-w3c-validator-status'] != 'Valid':
             errmsg = ElementExtracter(tag="li",attributes={"class":'msg_err'})
             errmsg.parse(rv.content)
