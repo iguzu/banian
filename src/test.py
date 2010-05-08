@@ -100,6 +100,45 @@ if __name__ == "__madin__":
         currencies.append((currency_code[index],currency_symbol[index]))
     print currencies
 
+
+class _UTCTimeZone(datetime.tzinfo):
+  """UTC timezone."""
+
+  ZERO = datetime.timedelta(0)
+
+  def utcoffset(self, dt):
+    return self.ZERO
+
+  def dst(self, dt):
+    return self.ZERO
+
+  def tzname(self, dt):
+    return 'UTC'
+
+_UTC = _UTCTimeZone()
+
+
 if __name__ == "__main__":
-    locale.setlocale(locale.LC_FR, '')
-    print locale.localeconv()          
+
+    ## Task with no ETA, api uses now.
+    eta = datetime.datetime.now()
+    print eta
+
+    # If eta as no timezone use UTC
+    eta = eta.replace(tzinfo=_UTC)
+    eta = eta.astimezone(_UTC)
+    print eta
+
+    # Convert to unix ctime
+    eta_sec = time.mktime(eta.timetuple())
+    
+    # convert back from ctime to python
+    eta = datetime.datetime.fromtimestamp(eta_sec)
+    print eta
+
+    """
+    Output:
+    2010-05-08 07:15:40.375000
+    2010-05-08 07:15:40.375000+00:00
+    2010-05-08 08:15:40
+    """
