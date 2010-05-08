@@ -125,7 +125,8 @@ class SeatConfiguration(db.Model):
         if not self.mutable():
             raise AssertionError
         seat_groups = self.seatgroup_set
-        db.delete(seat_groups)
+        if (seat_groups): 
+            db.delete(seat_groups)
         super(SeatConfiguration,self).delete()
 
     def put(self):
