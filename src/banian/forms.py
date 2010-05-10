@@ -48,10 +48,9 @@ def ValidateLocation(address=''):
     if models.offline_mode:
         return 0.0,0.0,'','','CA'
     else:
-        google_map_key = 'ABQIAAAAmAhTCYAPVCPRJ5WJRudjNhSojUClvdiPvvgRhwnUw8nSXcpHkBQoV6YnIJrZrn3Py7OwWBO61ApV1g'
         if address:
             address = address.replace(' ','+')
-        url = 'http://maps.google.com/maps/geo?q=%s&output=json&oe=utf8&sensor=false&key=%s' % (address, google_map_key)
+        url = 'http://maps.google.com/maps/api/geocode/json?address=%s&sensor=false' % address
         url = url.encode('utf-8')
         response = fetch(url)
         if response.status_code != 200:
@@ -60,35 +59,26 @@ def ValidateLocation(address=''):
             location = loads(response.content)
         except:
             raise ValidationError(_(u'Geolocation Service unavailable. Try to update your address later'))
-        if location['Status']['code'] != 200:
+        if location['status'] != 'OK':
+            logging.info(repr(location))
+            logging.info(repr(url))
             raise ValidationError(_(u'Unable to locate your address'))
-        location_info = findInLocation(location['Placemark'][0],
-                                       list(('AdministrativeAreaName','LocalityName','ThoroughfareName',
-                                        'SubAdministrativeAreaName','CountryNameCode','DependentLocalityName',
-                                        'Accuracy',)))
-        if location_info.get('Accuracy',0) < 5:
-            raise ValidationError(_(u'Location is not accurate enough, provide a more detailled address'))
-        longitude  = location['Placemark'][0]['Point']['coordinates'][0]
-        latitude = location['Placemark'][0]['Point']['coordinates'][1]
-        addressname = location['name']
-        short_addressname = ''
-        if 'LocalityName' in location_info:
-            if 'DependentLocalityName' in location_info:
-                short_addressname = short_addressname + location_info['DependentLocalityName'] + ', '
-            short_addressname = short_addressname + location_info['LocalityName']
-        elif 'SubAdministrativeAreaName' in location_info:
-            short_addressname = location_info['SubAdministrativeAreaName']
-        elif 'AdministrativeAreaName' in location_info:
-            short_addressname = location_info['AdministrativeAreaName']
-        elif 'ThoroughfareName' in location_info:
-            short_addressname = location_info['ThoroughfareName']
-        if 'CountryNameCode' in location_info:
-            if short_addressname:
-                short_addressname = short_addressname + ', '
-                country_code = location_info['CountryNameCode']
-                country_code = get_country_name(country_code)
-            short_addressname = short_addressname + country_code
-        return latitude, longitude, addressname, short_addressname, location_info.get('CountryNameCode','')
+        else:
+            result = location['results'][0]
+            if result['geometry']['location_type'] != 'ROOFTOP' and result['geometry']['location_type'] != 'RANGE_INTERPOLATED':
+                logging.debug(repr(result['geometry']['location_type']))
+                raise ValidationError(_(u'Location is not accurate enough, provide a more detailled address'))
+            address_components = {}
+            for item in result['address_components']:
+                address_components[item['types'][0]] = item['long_name'],item['short_name']
+            short_address = ''
+            if 'locality' in address_components:
+                short_address = short_address + address_components['locality'][1]
+            if 'administrative_area_level_1' in address_components:
+                short_address = short_address + ', ' + address_components['administrative_area_level_1'][1]                
+            if 'country' in address_components:
+                short_address = short_address + ', ' + address_components['country'][0]
+        return result['geometry']['location']['lat'],result['geometry']['location']['lng'],result['formatted_address'],short_address,address_components['country'][1] 
 
 
 class EventForm(ModelForm):
