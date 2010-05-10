@@ -588,12 +588,26 @@ def auto_load(request):
     logging.debug(repr(request.META))
     task_name_id = request.META.get('HTTP_X_APPENGINE_TASKNAME',None)
     task_id = memcache.get('auto-load-id') or 0
+    try:
+        urlfetch.Fetch(url="http://www.iguzu.com/events")
+        urlfetch.Fetch(url="http://www.iguzu.com/search/events/")
+        urlfetch.Fetch(url="http://www.iguzu.com/settings/")
+        urlfetch.Fetch(url="http://www.iguzu.com/events/representations/validation_list/")
+        urlfetch.Fetch(url="http://www.iguzu.com/user_events/")
+        urlfetch.Fetch(url="http://www.iguzu.com/transactions/")
+        urlfetch.Fetch(url="http://www.iguzu.com/")
+    except:
+        pass
     if not task_name_id:
-        taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=60)
-        memcache.set('auto-load-id',task_id+1)
+        try:
+            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=120)
+            memcache.set('auto-load-id',task_id+1)
+        except taskqueue.TaskAlreadyExistsError:
+            pass 
     elif int(task_name_id) >= task_id:
-        logging.debug(task_name_id)
-        logging.debug(task_id)
-        taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=60)
-        memcache.set('auto-load-id',task_id+1)
+        try:
+            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=120)
+            memcache.set('auto-load-id',task_id+1)
+        except taskqueue.TaskAlreadyExistsError:
+            pass 
     return HttpResponse("Completed")
