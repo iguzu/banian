@@ -600,13 +600,13 @@ def auto_load(request):
         pass
     if not task_name_id:
         try:
-            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=120)
+            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=30)
             memcache.set('auto-load-id',task_id+1)
         except taskqueue.TaskAlreadyExistsError:
             pass 
     elif int(task_name_id) >= task_id:
         try:
-            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=120)
+            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=30)
             memcache.set('auto-load-id',task_id+1)
         except taskqueue.TaskAlreadyExistsError:
             pass 
