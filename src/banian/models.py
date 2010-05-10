@@ -244,8 +244,10 @@ class Event(GeoModel):
     def delete(self):
         if not self.mutable():
             raise AssertionError
-        db.delete(self.representation_set)
-        db.delete(self.ticketclass_set)
+        if self.representation_set:
+            db.delete(self.representation_set)
+        if self.ticketclass_set:
+            db.delete(self.ticketclass_set)
         if self.thumbnail_image:
             db.delete(self.thumbnail_image)
         if self.poster_image:
