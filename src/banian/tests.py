@@ -126,7 +126,7 @@ def run_tasks(name=None,url=None,lapse=0):
     for queue in stub.GetQueues():
         tasks = stub.GetTasks(queue['name'])
         #keep only tasks that need to be executed with a certain lapse of time
-        now = datetime.now() + timedelta(seconds=lapse)
+        now = datetime.utcnow() + timedelta(seconds=lapse)
         tasks = filter(lambda t: datetime.strptime(t['eta'],'%Y/%m/%d %H:%M:%S') <= now, tasks)
         if url:
             tasks = filter(lambda t: t['url'] == url, tasks)
@@ -2718,7 +2718,7 @@ class CloseRepresentationTestCase(TestCase):
         self.assertEqual(e.first_representation().status,'Published')
         r= self.client.get(reverse('banian.tasks.views.schedule_close_representations'))
         self.assertContains(r,'Nothing to do')
-        run_tasks(lapse=30)
+        run_tasks(lapse=60)
         rep = models.Representation.get(e.first_representation().key())
         self.assertEqual(rep.status,'Published')
             
@@ -2733,7 +2733,7 @@ class CloseRepresentationTestCase(TestCase):
         self.assertEqual(e.first_representation().status,'On Sale')
         r= self.client.get(reverse('banian.tasks.views.schedule_close_representations'))
         self.assertContains(r,'Completed: 1')
-        run_tasks(lapse=30)
+        run_tasks(lapse=60)
         rep = models.Representation.get(e.first_representation().key())
         self.assertEqual(rep.status,'Completed')
         
@@ -2751,7 +2751,7 @@ class CloseRepresentationTestCase(TestCase):
         self.assertEqual(rep.status,'Sold Out')
         r= self.client.get(reverse('banian.tasks.views.schedule_close_representations'))
         self.assertContains(r,'Completed: 1')
-        run_tasks(lapse=30)
+        run_tasks(lapse=60)
         rep = models.Representation.get(e.first_representation().key())
         self.assertEqual(rep.status,'Completed')
 
@@ -2770,7 +2770,7 @@ class CloseRepresentationTestCase(TestCase):
         unStubPaypal()
         r= self.client.get(reverse('banian.tasks.views.schedule_close_representations'))
         self.assertContains(r,'Completed: 1')
-        run_tasks(lapse=30)
+        run_tasks(lapse=60)
         rep = models.Representation.get(e.first_representation().key())
         self.assertEqual(rep.status,'Sold Out')
         StubPaypal()
