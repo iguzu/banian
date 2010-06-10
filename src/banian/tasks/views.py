@@ -405,16 +405,16 @@ def update_representation_revenues(request):
 
 
 def acquirePayment(representation,type):
-    payments = RepresentationPayment.all().filter('status =','Acquiring').ancestor(representation).get()
-    if not payments:
-        payment = RepresentationPayment(status='Acquiring',
+    payment = RepresentationPayment.all().filter('status =','Acquiring').ancestor(representation).get()
+    if payment:
+        payment.status='Incompleted'
+        payment.put()
+    payment = RepresentationPayment(status='Acquiring',
                                         type=type,
                                         date=datetime.utcnow().replace(tzinfo=gaepytz.utc),
                                         parent=representation)
-        payment.put()
-        return payment
-    else:
-        return None     
+    payment.put()
+    return payment
 
 def close_representation(request):
     logging.info('Task close_representation - Start')
@@ -499,8 +499,8 @@ def close_representation(request):
                 return HttpResponse("Completed")
         else:
             #TODO: if the acquisition date more than few minutes, need to process it anyway. Probably need to check the balance of approval vs what was billed and figure out a proper reconcilation
-            logging.info('Task close_representation - Concurrency issue')
-            return HttpResponseServerError('Concurrency issue')
+            logging.info('Task close_representation - Unexpected issue')
+            return HttpResponseServerError('Unexpected issue')
     else:
         logging.critical('Cannot collect final payment on representation:\n %s' % repr(representation))
         logging.info('Task close_representation - No payments collected')
@@ -588,26 +588,15 @@ def auto_load(request):
     logging.debug(repr(request.META))
     task_name_id = request.META.get('HTTP_X_APPENGINE_TASKNAME',None)
     task_id = memcache.get('auto-load-id') or 0
-    try:
-        urlfetch.Fetch(url="http://www.iguzu.com/events")
-        urlfetch.Fetch(url="http://www.iguzu.com/search/events/")
-        urlfetch.Fetch(url="http://www.iguzu.com/settings/")
-        urlfetch.Fetch(url="http://www.iguzu.com/events/representations/validation_list/")
-        urlfetch.Fetch(url="http://www.iguzu.com/user_events/")
-        urlfetch.Fetch(url="http://www.iguzu.com/transactions/")
-        urlfetch.Fetch(url="http://www.iguzu.com/")
-    except:
-        pass
-    if not task_name_id:
-        try:
-            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=30)
-            memcache.set('auto-load-id',task_id+1)
-        except taskqueue.TaskAlreadyExistsError:
-            pass 
-    elif int(task_name_id) >= task_id:
-        try:
-            taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=30)
-            memcache.set('auto-load-id',task_id+1)
-        except taskqueue.TaskAlreadyExistsError:
-            pass 
+    if not task_name_id or int(task_name_id) >= task_id:        
+        while 1:
+            try:
+                memcache.set('auto-load-id',task_id+1)
+                taskqueue.add(name=str(task_id+1),url='/tasks/auto_load/', countdown=5)
+                break
+            except taskqueue.TaskAlreadyExistsError:
+                break
+            except taskqueue.TombstonedTaskError:
+                pass
+
     return HttpResponse("Completed")
