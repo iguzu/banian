@@ -121,15 +121,16 @@ _UTC = _UTCTimeZone()
 if __name__ == "__main__":
 
     ## Task with no ETA, api uses now.
-    eta = datetime.datetime.now()
+    eta = datetime.datetime.utcnow()
     print eta
 
     # If eta as no timezone use UTC
-    eta = eta.replace(tzinfo=_UTC)
-    eta = eta.astimezone(_UTC)
+#    eta = eta.replace(tzinfo=_UTC)
+#    eta = eta.astimezone(_UTC)
     print eta
 
     # Convert to unix ctime
+    print eta.timetuple()
     eta_sec = time.mktime(eta.timetuple())
     
     # convert back from ctime to python
